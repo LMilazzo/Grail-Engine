@@ -12,14 +12,33 @@ class CollapsibleLayout(QWidget):
         self.content.setLayout(content_layout)
         self.content.setVisible(False)  # start collapsed
 
+        self.title = title
+
+        self.active = False
+        self.active_text = "+ " + self.title + " +"
+        self.inactive_text = "- " + self.title + " -"
+
         # Toggle button
-        self.toggle_btn = QToolButton()
-        self.toggle_btn.setText(title)
-        self.toggle_btn.setCheckable(True)
-        self.toggle_btn.setChecked(False)
-        self.toggle_btn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        self.toggle_btn.setArrowType(Qt.ArrowType.RightArrow)
+        self.toggle_btn = QPushButton()
+        self.toggle_btn.setText(self.inactive_text)
+        self.toggle_btn.setObjectName("toggle")
+       
         self.toggle_btn.clicked.connect(self.toggle)
+
+        # Styling
+        self.toggle_btn.setFixedHeight(25)
+        self.toggle_btn.setStyleSheet("""
+            QPushButton#toggle {
+                background-color: #000000;
+                border: 1px solid white;
+                border-radius: 10%;
+                color: white;
+                font-weight: bold;
+            }
+            QPushButton#toggle:hover{
+                background-color: #191919;
+            }
+        """)
 
         # Layout
         layout = QVBoxLayout(self)
@@ -29,23 +48,14 @@ class CollapsibleLayout(QWidget):
         layout.addWidget(self.content)
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 
-        # Styling
-        self.setStyleSheet("""
-            QToolButton {
-                border: 1px solid white;
-                border-radius: 10%;
-                color: white;
-                font-weight: bold;
-                text-align: left;
-            }
-            QToolButton::menu-indicator {
-                image: none;
-            }
-        """)
-
     # toggles the section up or down
     def toggle(self):
-        expanded = self.toggle_btn.isChecked()
-        self.content.setVisible(expanded)
-        self.toggle_btn.setArrowType(Qt.ArrowType.DownArrow if expanded else Qt.ArrowType.RightArrow)
+        self.active = not self.active
+
+        if self.active:
+            self.toggle_btn.setText(self.active_text)
+        else:
+            self.toggle_btn.setText(self.inactive_text)
+
+        self.content.setVisible(self.active)
 # <<< COLLAPIBLE LAYOUT <<<

@@ -18,6 +18,9 @@ class ClearHistoryButton(QPushButton):
                 background-color: #000000;
                 color: white;
             }
+            QPushButton#ClearHistoryButton:hover {
+                background-color: #633636; 
+            }    
         """)
 
         self.setFixedWidth(65)

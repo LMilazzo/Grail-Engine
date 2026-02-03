@@ -71,7 +71,7 @@ class ModelParamSlider(StyledWidget):
                 border-radius: 3px;
             }}
             QSlider#{name}::handle:vertical {{
-                background: red;
+                background: #633636;
                 border: 0px solid #aaaaaa;
                 height: 10px;
                 margin: 0 -5px;

@@ -18,6 +18,9 @@ class SendPromptButton(QPushButton):
                 background-color: #000000;
                 color: white;
             }
+            QPushButton#SendPromptButton:hover {
+                background-color: #232d16
+            }
         """)
 
         # Size

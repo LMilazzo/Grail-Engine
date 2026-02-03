@@ -18,6 +18,9 @@ class ClearLastChatButton(QPushButton):
                 background-color: #000000;
                 color: white;
             }
+            QPushButton#ClearLastMessageButton:hover {
+                background-color: #633636; 
+            }    
         """)
 
         self.setFixedWidth(90)

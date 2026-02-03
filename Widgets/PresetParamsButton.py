@@ -43,6 +43,10 @@ class PresetParamsButton(StyledWidget):
                 margin: 0px; 
                 font-weight: bold;
             }}
+            QPushButton#{"Preset"+name+"Button"}:hover {{
+                background-color: #191919;
+                border: 1px solid white;
+            }}
         """)
 
         layout.setContentsMargins(0,0,0,0)

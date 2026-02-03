@@ -48,6 +48,8 @@ class SideBar(StyledWidget):
         self.layout.addWidget(self.scroll_area)
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(3,3,3,3)
+        # Fixed Width
+        self.setFixedWidth(220)
 
         # Styling
         self.setStyleSheet("""
@@ -228,9 +230,6 @@ class SideBar(StyledWidget):
 
         # Stretch
         self._layout.addStretch()
-
-        # Fixed Width
-        self.setFixedWidth(220)
 
     # Assigns a controller to this sidebar to access prompt settings
     def setChatController(self, controller: ChatController):

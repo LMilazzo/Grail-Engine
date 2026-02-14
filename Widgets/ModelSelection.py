@@ -10,10 +10,13 @@ class ModelSelection(StyledWidget):
     def __init__(self):
         super().__init__("ModelSelection")
 
-        #Layout -V-
+        #--------------------------------------------------  
+        #------------------ CORE LAYOUT ------------------- 
+        #--------------------------------------------------
+
         layout = QVBoxLayout(self)
 
-        # Styling
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.setStyleSheet("""
             QWidget#ModelSelection {
                 background-color: #000000;
@@ -22,14 +25,19 @@ class ModelSelection(StyledWidget):
 
         # Width
         self.setFixedWidth(150)
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
 
-        # Drop Down Box
-        self.model_selection = UpwardsComboBox()
-        self.model_selection.setObjectName("ModelSelectionBox")
-        # Size
-        self.model_selection.setFixedHeight(35)
+        #--------------------------------------------------  
+        #------------- MODEL SELECTION WIDGET -------------
+        #--------------------------------------------------
+
+        self.select_box = UpwardsComboBox()
+
+        self.select_box.setObjectName("ModelSelectionBox")
+
+        #~~ ~~ ~~ ~~ ~~ ~~ ~~ STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~ ~~
         # Style
-        self.model_selection.setStyleSheet("""
+        self.select_box.setStyleSheet("""
             QComboBox#ModelSelectionBox {
                 background-color: #000000;
                 color: white;
@@ -41,14 +49,19 @@ class ModelSelection(StyledWidget):
                 width: 0px;
             }
         """)
+        
+        # Size
+        self.select_box.setFixedHeight(35)
+        #~~ ~~ ~~ ~~ ~~ ~~ ~~ STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~ ~~
 
-        # Add Widget
-        layout.addWidget(self.model_selection)
-    
-    # Adds a List of models into the wodget for selection
-    def add_models(self, models: list):
+        layout.addWidget(self.select_box)
+#__________________________________________________________________________________________________________
+
+    # Adds a List of models into the widget for selection
+    def addModels(self, models: list):
 
         # List of ollama models
         for model in models:
-            self.model_selection.addItem(model)
+            self.select_box.addItem(model)
+            
 # <<< MODEL SELECTION <<<

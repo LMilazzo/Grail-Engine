@@ -9,26 +9,47 @@ class ModelParamSlider(StyledWidget):
     def __init__(self, default: float, width: int, title: QLabel, name: str, 
                  max=2.0, min=0.0, decimals=3, precision = 200.0, height = 150,
                  custom_scale = None, orientation=Qt.Orientation.Vertical):
+        
         super().__init__("Container"+name)
+        
+        #--------------------------------------------------  
+        #------------------ CORE LAYOUT ------------------- 
+        #--------------------------------------------------
 
-        # Title Label 
+        layout = QVBoxLayout(self)
+
+        # TITLE
         self.title = title
 
+        # DECIMAL PLACES 
         self.decimals = decimals
-
-        # Value display label
-        self.value_label = QLabel(f"{default:.{self.decimals}f}") # Three Float points
-        self.value_label.setStyleSheet("color: white;")
-
-        # Make Slider Slider
-        self.slider = QSlider(orientation)
-        self.slider.setObjectName(name)
 
         # Set Bounds
         self.min = min
         self.max = max
         self.precision = precision
         self.default = default
+
+        #--------------------------------------------------  
+        #------------------ VALUE LABEL ------------------- 
+        #--------------------------------------------------
+
+        # Value display label
+        self.value_label = QLabel(f"{default:.{self.decimals}f}")
+
+        #~~ ~~ ~~ ~~ ~~ ~~ ~~ STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~ ~~
+        self.value_label.setStyleSheet("color: white;")
+
+        #--------------------------------------------------  
+        #--------------------- SLIDER --------------------- 
+        #--------------------------------------------------
+
+        self.slider = QSlider(orientation)
+        self.slider.setObjectName(name)
+
+        #--------------------------------------------------  
+        #------------ EDIT SCALE/SET DEFAULTS -------------
+        #--------------------------------------------------
     
         if custom_scale:
             self.custom_scale = custom_scale
@@ -48,14 +69,18 @@ class ModelParamSlider(StyledWidget):
         self.slider.setValue(int(self.default * self.precision))
         self._update_label()
 
-        # Layout -V-
-        layout = QVBoxLayout(self)
+        
+        #--------------------------------------------------  
+        #--------------------- BUILD ----------------------
+        #--------------------------------------------------
 
         layout.addWidget(self.title, alignment=Qt.AlignmentFlag.AlignHCenter)
         layout.addWidget(self.value_label, alignment=Qt.AlignmentFlag.AlignHCenter)
         layout.addWidget(self.slider, alignment=Qt.AlignmentFlag.AlignHCenter)
         
-        # Styling 
+
+
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.setStyleSheet(f"""
             QWidget#{"Container"+name} {{
                 border: 1px solid #333333;
@@ -84,30 +109,40 @@ class ModelParamSlider(StyledWidget):
         self.slider.setFixedWidth(int(width/2))
         self.setFixedHeight(height)
         self.setContentsMargins(0,0,0,0)
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
 
         # Connect slider move to label update
         self.slider.valueChanged.connect(self._update_label)
+
+#__________________________________________________________________________________________________________
 
     #Updates the float label
     def _update_label(self):
         
         if self.custom_scale:
-            self.value_label.setText(f"{self.value():.{self.decimals}f}")
+
+            self.value_label.setText(f"{self.getValue():.{self.decimals}f}")
+
             return
         
-        self.value_label.setText(f"{self.value():.{self.decimals}f}")
+        self.value_label.setText(f"{self.getValue():.{self.decimals}f}")
 
     # returns the float value of the slider
-    def value(self):
+    def getValue(self):
 
         if self.custom_scale:
+
             return self.custom_scale[int(self.slider.value())]
+        
         #print(self.slider.value())
+
         return self.slider.value() / self.precision
     
-    def set_value(self, value):
+    def setValue(self, value):
 
         self.slider.setValue(int(value * self.precision))
+
         self._update_label()
+
 # <<< MODEL PARAMETER SLIDER <<<
 

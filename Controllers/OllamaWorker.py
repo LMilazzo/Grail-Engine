@@ -1,33 +1,38 @@
 from PyQt6.QtCore import QObject, pyqtSignal, QRunnable, QThreadPool
 
-from Controllers.TurnController import *
+
+from Controllers.ToolController import ToolController
+from Controllers.TurnController import TurnController
+from Controllers.TurnState import TurnState
 
 from Utils.OllamaUtils import * 
 
 import time
 import json
 
-# >>> WORKER SIGNALS >>>s
+#**************  SIGNALS *****************
 class WorkerSignals(QObject):
     process_chunk = pyqtSignal(str)
     stop = pyqtSignal()
-    update_prompt_display = pyqtSignal(int, dict)
-# <<< WORKER SIGNALS <<<
+    final_prompt = pyqtSignal(dict)
+#**************  SIGNALS *****************
 
 
 # >>> WORKER >>>
-class ResponseWorker(QRunnable):
-    def __init__(self, prompt: dict, toolController: "ToolController", prompt_id: int):
+class OllamaWorker(QRunnable):
+    def __init__(self, initial_prompt: dict, params: dict, toolController: ToolController):
         super().__init__()
         
-        self.payload = prompt # A Prompt object
+        #**************  SIGNALS *****************
         self.signals = WorkerSignals()
 
-        # The tool controller hub
+
+        self.payload = initial_prompt
+
         self.toolController = toolController
 
-        #The id of the prompt
-        self.prompt_id = prompt_id
+        self.params = params
+#__________________________________________________________________________________________________________
 
     def run(self):
         # Builds some classes that 
@@ -38,22 +43,25 @@ class ResponseWorker(QRunnable):
         # - repeat until no tool calls
         # - return resopnse stream
         # Call stream to stream results
-        turn_state = TurnState(self.payload)
-        turn_controller = TurnController(turn_state, self.toolController, self.prompt_id)
-        turn_controller.signals.update_prompt_display.connect(self.updatePromptDisplay)
+        Turn_State = TurnState(self.payload)
 
-        response_stream = turn_controller.agent_loop()
+        Turn_Controller = TurnController(Turn_State, self.toolController)
+
+        # CONNECT FINAL PROMPT SIGNALS
+        Turn_Controller.signals.final_prompt.connect(self.emitFinalPrompt)
+
+        response_stream = Turn_Controller.agent_loop()
 
         if response_stream:
             self._stream(response_stream)
 
     def _stream(self, response_stream):
-        for chunk in streamResponse(response_stream):
-            self.signals.process_chunk.emit(chunk)  #Emit chunk to conversation
-            time.sleep(0.02)
+        for chunk in response_stream: #streamResponse(response_stream):
+            self.signals.process_chunk.emit(chunk["data"])  #Emit chunk to conversation
+            #time.sleep(0.02)
         self.signals.stop.emit() #Emit the final signal ending the response
 
-    def updatePromptDisplay(self, id, payload):
-        #Update Prompt bubble signal
-        self.signals.update_prompt_display.emit(id, payload)
+    def emitFinalPrompt(self, final_prompt):
+        self.signals.final_prompt.emit(final_prompt)
+
 # <<< WORKER <<<

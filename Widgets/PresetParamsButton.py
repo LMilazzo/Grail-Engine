@@ -9,28 +9,13 @@ class PresetParamsButton(StyledWidget):
     def __init__(self, name, title, param_dict, callback=None):
         super().__init__("Preset"+name)
 
-        # Name
-        self.name = name
+        #--------------------------------------------------  
+        #------------------ CORE LAYOUT ------------------- 
+        #--------------------------------------------------
 
-        # Preset
-        self.params = param_dict
-
-        # Callback
-        self.callback = callback
-
-        # The Button
-        self.button = QPushButton(title)
-        self.button.setObjectName("Preset"+name+"Button")
-        self.button.setFixedHeight(30)
-        self.button.setContentsMargins(0,0,0,0)
-
-        # Click function
-        if self.callback:
-            self.button.clicked.connect(self._onclick)
-
-        # Layout -H-
         layout = QHBoxLayout(self)
 
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.setStyleSheet(f"""
             QWidget#{"Preset"+name} {{
             }}
@@ -49,8 +34,34 @@ class PresetParamsButton(StyledWidget):
             }}
         """)
 
+        
         layout.setContentsMargins(0,0,0,0)
         layout.setSpacing(0)
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
+
+        self.name = name
+
+        # Preset Dict
+        self.params = param_dict
+
+        # Callback
+        self.callback = callback
+
+        #--------------------------------------------------  
+        #---------------- PRESET BUTTON -------------------
+        #--------------------------------------------------
+
+        self.button = QPushButton(title)
+        self.button.setObjectName("Preset"+name+"Button")
+
+        #~~ ~~ ~~ ~~ ~~ ~~ ~~ STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~ ~~
+        self.button.setFixedHeight(30)
+        self.button.setContentsMargins(0,0,0,0)
+
+        # Click function
+        if self.callback:
+            self.button.clicked.connect(self._onclick)
+
         layout.addWidget(self.button)
 
     def _onclick(self):

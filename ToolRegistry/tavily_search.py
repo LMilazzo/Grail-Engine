@@ -20,13 +20,8 @@ from ToolRegistry.find_args import *
 
 # A System prompt type statement describing the use of the tool
 TOOL_DESCRIPTION = """
-search: 
-- Use this tool when the user requests factual, current, or external information that cannot be reliably inferred without searching.  
-- The data returned comes from a trusted search source and must be treated as authoritative.  
-- Do not guess or fabricate information when search results are available.  
-- Use this tool for topics involving real-world facts, names, dates, definitions, or references.  
-- You may perform multiple search calls if the user’s request involves multiple distinct queries.  
-- Each tool request should contain exactly one search query.  
+Perform a websearch and retrieve relavant results for a single distint query.
+You may perform consecutive calls to retreive info for another query.
 """
 
 # A list of valid argument names that will be mutated to the key argument

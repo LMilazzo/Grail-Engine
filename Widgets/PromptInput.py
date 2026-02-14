@@ -5,22 +5,28 @@ from PyQt6.QtGui import *
 from Widgets.PromptTextEdit import PromptTextEdit
 from Widgets.StyledWidget import StyledWidget
 
-# >>> PROMPT TEXT EDIT SIGNALS >>>
-class PromptInputSignals(QObject):
-    sendRequested = pyqtSignal()
-# <<< PROMPT TEXT EDIT SIGNALS <<<
+#**************  SIGNALS *****************
+class WidgetSignals(QObject):
+
+    # Connects the enter key to sending the prompt
+    send_prompt = pyqtSignal()
+
+#**************  SIGNALS *****************
 
 # >>> PROMPT INPUT >>>
 class PromptInput(StyledWidget):
     def __init__(self):
         super().__init__("PromptInput")
-        
-        self.signals = PromptInputSignals()
 
-        # Layout -H-
+        #**************  SIGNALS *****************
+        self.signals = WidgetSignals()
+
+        #--------------------------------------------------  
+        #------------------ CORE LAYOUT ------------------- 
+        #--------------------------------------------------
         layout = QHBoxLayout(self)
         
-        # Styling
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.setStyleSheet("""
             QWidget#PromptInput {
                 background-color: #000000;
@@ -33,27 +39,35 @@ class PromptInput(StyledWidget):
                 padding: 2px;
             }
         """)
-        
+
         # Max Height
         self.setFixedHeight(100)
+        
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
 
-        # Input box 
+        #--------------------------------------------------  
+        #-------------- PROMPT INPUT WIDGET --------------- 
+        #--------------------------------------------------
         self.input_box = PromptTextEdit()
 
         # Set Name
         self.input_box.setObjectName("PromptInputBox")
 
-        # Default
+        # Default  Text Placeholder
         self.input_box.setPlaceholderText("<!...>")
 
         # Starting Size
         self.input_box.setFixedHeight(40)
 
-        # Connect resizing and sending functions
+        # Connect resizing
         self.input_box.textChanged.connect(self._resize)
-        self.input_box.signals.sendRequested.connect(self.signals.sendRequested)
+
+        # Connect Enter Pressed to send the request signal
+        self.input_box.signals.enter_pressed.connect(self._emit_request)
 
         layout.addWidget(self.input_box)
+
+#__________________________________________________________________________________________________________
 
     # Resizes the Text box to fit the full text ( Only Height wise )
     def _resize(self):
@@ -86,4 +100,11 @@ class PromptInput(StyledWidget):
     def clear(self):
         self.input_box.clear()
         self.input_box.setFixedHeight(40)
+
+    # Emits the send_prompt signal with the prompt data
+    def _emit_request(self):
+        self.signals.send_prompt.emit()
+        
 # <<< PROMPT INPUT <<<
+
+

@@ -9,10 +9,13 @@ class SystemPromptInput(StyledWidget):
     def __init__(self):
         super().__init__("SystemPromptInput")
 
-        # Layout -V-
+        #--------------------------------------------------  
+        #------------------ CORE LAYOUT ------------------- 
+        #--------------------------------------------------
+
         layout = QVBoxLayout(self)
 
-        # Styling
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.setStyleSheet("""
             QWidget#SystemPromptInput {
                 background-color: #000000;
@@ -26,23 +29,26 @@ class SystemPromptInput(StyledWidget):
             }
         """)
 
-        # Text Area
+        self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
+
+        #--------------------------------------------------  
+        #---------------- INPUT WIDGET -------------------- 
+        #--------------------------------------------------  
         self.input = QTextEdit()
 
         # Set Name
         self.input.setObjectName("SystemPromptTextEdit")
 
-        # Scroll bar policy
+        #~~ ~~ ~~ ~~ ~~ ~~ ~~ STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.input.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        
-        # Size
         self.input.setFixedHeight(175)
-        self.input.setFixedWidth(175)
-        # IMPORTANT: prevent vertical expansion
-        self.setSizePolicy(
-            QSizePolicy.Policy.Minimum,
-            QSizePolicy.Policy.Fixed
-        )
-        
+
         layout.addWidget(self.input)
+
+#__________________________________________________________________________________________________________
+
+    def getText(self):
+        return self.input.toPlainText()
+
 # <<< SYSTEM PROMPT INPUT <<<

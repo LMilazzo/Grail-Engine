@@ -37,7 +37,7 @@ OLLAMA_TOOLS = {
                     "description": "A search query to perform"
                 }
             },
-            "required": ["location"]
+            "required": ["query"]
         }
     }
 }

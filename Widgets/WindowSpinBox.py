@@ -10,7 +10,18 @@ class WindowSpinBox(QSpinBox):
         # Set Name
         self.setObjectName("WindowSizeSelection")
 
-        # Styling
+        #--------------------------------------------------  
+        #------------------- VALUES ----------------------- 
+        #--------------------------------------------------
+        self.min = 0
+        self.max = 99
+
+        self.setRange(self.min, self.max)
+
+        # DEFAULT VALUE
+        self.setValue(12)
+
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.setStyleSheet("""
             QSpinBox#WindowSizeSelection {
                 border: 1px solid white;
@@ -25,15 +36,10 @@ class WindowSpinBox(QSpinBox):
             }
         """)
 
-        # Limits
-        self.min = 0
-        self.max = 99
-        self.setRange(self.min, self.max)
-
-        # Default
-        self.setValue(12)
-
         # Size
         self.setFixedWidth(25)
         self.setFixedHeight(30)
+
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
+
 # <<< WINDOW SIZE SELECTION <<<

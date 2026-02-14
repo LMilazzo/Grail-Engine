@@ -4,9 +4,9 @@ import json
 URL = "http://localhost:11434/api/"
 
 # >>> OLLAMA REQUEST >>>
-def ollamaPrompt(payload, url="http://localhost:11434/api/chat"):
+def ollamaPrompt(payload, url="http://localhost:11434/api/chat", stream=False):
 
-    response = requests.post(url, json=payload, stream=False)
+    response = requests.post(url, json=payload, stream=stream)
 
     return response
 # <<< OLLAMA REQUEST <<<
@@ -56,6 +56,7 @@ def listModels(url = "http://localhost:11434/api/tags"):
     return modelList
 # <<< LIST MODELS <<<
 
+
 # >>> GET TOKEN COUNT FROM PROMPT >>> 
 def TokenCountEstimate_Prompt(payload):
 
@@ -67,6 +68,7 @@ def TokenCountEstimate_Prompt(payload):
 
     return token_rough_estimate + overhead_estimate
 # <<< GET TOKEN COUNT <<<
+
 
 # >>> GET TOKEN COUNT FROM STRING >>> 
 def TokenCountEstimate_String(payload):

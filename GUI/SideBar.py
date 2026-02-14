@@ -1,10 +1,8 @@
 from PyQt6.QtWidgets import *
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import *
 from PyQt5.QtGui import QFont
 
 from Model_Presets.Param_Presets import PARAM_PRESETS
-
-from Controllers.ChatController import *
 
 from Widgets.StyledWidget import StyledWidget
 from Widgets.CollapsibleLayout import CollapsibleLayout
@@ -16,42 +14,63 @@ from Widgets.ClearLastChatButton import ClearLastChatButton
 from Widgets.ModelParamSlider import ModelParamSlider
 from Widgets.ToolToggle import ToolToggle
 from Widgets.PresetParamsButton import PresetParamsButton
+from Widgets.PlotWindow import PlotWindow
 
 import re
 
+#**************  SIGNALS *****************
+class WidgetSignals(QObject):
+    clear_chat = pyqtSignal()
+    clear_last_chats = pyqtSignal()
+#**************  SIGNALS *****************
+
 # >>> SIDE BAR >>>
+
+WIDTH = 300
+LABEL_STYLES = "color: white; padding: 0px; margin: 0px; font-weight: bold;"
+TOKEN_SCALE = [16, 64, 128, 256, 512, 1024, 2048, 4096]
+
 class SideBar(StyledWidget):
     def __init__(self):
         super().__init__("SideBarContainer")
-        
-        # A registry of tool names and their toggle switches 
-        self.active_tools = {}
 
-        # Scroll area
+        #**************  SIGNALS *****************
+        self.signals =  WidgetSignals()
+
+        #--------------------------------------------------  
+        #--------------- SCROLL CONTAINER ----------------- 
+        #--------------------------------------------------
+
         self.scroll_area = QScrollArea()
         self.scroll_area.setObjectName("SideBarScrollArea")
+
+        MASTER_layout = QVBoxLayout(self)
+        MASTER_layout.addWidget(self.scroll_area)
+
+        #~~ ~~ ~~ ~~ ~~ ~~ ~~ STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_area.setContentsMargins(0,0,0,0)
+        MASTER_layout.setSpacing(0)
+        MASTER_layout.setContentsMargins(3,3,3,3)
+        
+        #Sidebar width
+        self.setFixedWidth(WIDTH)
+        #~~ ~~ ~~ ~~ ~~ ~~ ~~ STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~ ~~
 
-        # Internal Sidebar
-        self.content = StyledWidget("Sidebar")
-        self.content.setContentsMargins(0,0,0,0)
-        self._layout = QVBoxLayout(self.content)
+        #--------------------------------------------------  
+        #------------------ CORE LAYOUT ------------------- 
+        #--------------------------------------------------
+        self.main = StyledWidget("Sidebar")
+        
+        #Inner layout that is more important
+        self.sidebar_layout = QVBoxLayout(self.main)
 
-        # Set as content widget
-        self.scroll_area.setWidget(self.content)
+        # CONNECT THE MASTER content to the scroll area 
+        self.scroll_area.setWidget(self.main)
 
-        #Container Layout -V-
-        self.layout = QVBoxLayout(self)
-        self.layout.addWidget(self.scroll_area)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(3,3,3,3)
-        # Fixed Width
-        self.setFixedWidth(220)
-
-        # Styling
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.setStyleSheet("""
             QWidget#SideBarContainer {
                 border: 1px solid white;
@@ -67,216 +86,344 @@ class SideBar(StyledWidget):
                 background-color: transparent;
             }
         """)
-        
+
         # Alignement
-        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.sidebar_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
 
-        # OPTIONS LABELS STYLE
-        self._label_styles = "color: white; padding: 0px; margin: 0px; font-weight: bold;"
+#__________________________________________________________________________________________________________
 
-        #------------------------------------------------------------------------------------
-        # Add System Prompt Area
+        #--------------------------------------------------  
+        #------------- SYSTEM PROMPT WIDGET --------------- 
+        #--------------------------------------------------
 
         self.system_prompt_input = SystemPromptInput()
-        self.spi_wrapper = CollapsibleWidget("System Prompt", self.system_prompt_input)
-        self._layout.addWidget(self.spi_wrapper)
 
-        #------------------------------------------------------------------------------------
-        # Add memory options
+        self.system_prompt_input_collapsible = CollapsibleWidget("System Prompt", self.system_prompt_input)
 
-        # Column layout
-        self.mem_options_col = QVBoxLayout()
+        self.sidebar_layout.addWidget(self.system_prompt_input_collapsible)
 
-        #Top horizontal GOAL: |   WIPE_BTN     WINDOW SIZE |
-        self.mem_options_row1 = QHBoxLayout()
-        self.mem_options_row1.setSpacing(3)
+#__________________________________________________________________________________________________________
+        
+        #--------------------------------------------------  
+        #--------------- MEMORY OPTIONS ------------------- 
+        #--------------------------------------------------
 
-        # Window Size Selection
-        mem_window_label = QLabel("Window: ")
-        mem_window_label.setStyleSheet(self._label_styles)
-        self.mem_options_row1.addWidget(mem_window_label)
-        self.memory_window_selection = WindowSpinBox()
-        self.mem_options_row1.addWidget(self.memory_window_selection)
-        self.mem_options_row1.addSpacing(15)
+        # LAYOUT 
+        # |  WINDOW SIZE    CLEAR CHAT    CLEAR LAST MESSAGES |
+        
+        self.memory_options_row = QHBoxLayout()
 
-        # Memory wipe button
-        self.memory_wipe_btn = ClearHistoryButton()
-        self.mem_options_row1.addWidget(self.memory_wipe_btn)
-        self.mem_options_row1.addStretch()
+        self.memory_options_collapsible = CollapsibleLayout("Memory Options", self.memory_options_row)
 
-        # Create row 2
-        self.mem_options_row2 = QHBoxLayout()
-        self.mem_options_row2.setSpacing(3)
-        self.mem_clear_last_chat_btn = ClearLastChatButton()
-        self.mem_options_row2.addWidget(self.mem_clear_last_chat_btn)
-        self.mem_options_row2.addStretch()
+        self.sidebar_layout.addWidget(self.memory_options_collapsible)
 
-        #Add rows to col
-        self.mem_options_col.addLayout(self.mem_options_row1)
-        self.mem_options_col.addLayout(self.mem_options_row2)
+        #~~ ~~ ~~ ~~ ~~ ~~ ~~ STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~ ~~
+        self.memory_options_row.setSpacing(3)
 
-        self.mem_opt_wrapper = CollapsibleLayout("Memory Options", self.mem_options_col)
+        #--------------------------------------------------  
+        #------------ MESSAGE WINDOW SELECT ---------------
+        #--------------------------------------------------
 
-        self._layout.addWidget(self.mem_opt_wrapper)
+        self.memory_window_select = WindowSpinBox()
 
-        #------------------------------------------------------------------------------------
-        # Add model parameter options
+        memory_window_label = QLabel("Window: ")
+        memory_window_label.setStyleSheet(LABEL_STYLES)
+
+        # ADD LABEL THEN WIDGET
+        self.memory_options_row.addWidget(memory_window_label)
+        self.memory_options_row.addWidget(self.memory_window_select)
+
+        # Add Manual spacing
+        self.memory_options_row.addSpacing(7)
+
+        #--------------------------------------------------  
+        #------------ CLEAR ALL MEMORY WIDGET -------------
+        #--------------------------------------------------
+        
+        self.clear_memory_btn = ClearHistoryButton()
+
+        self.memory_options_row.addWidget(self.clear_memory_btn)
+        
+        # Add Manual spacing
+        self.memory_options_row.addSpacing(7)
+
+        self.clear_memory_btn.clicked.connect(self.signals.clear_chat.emit)
+
+        #--------------------------------------------------  
+        #---------- CLEAR LAST MSG/PAIR WIDGET ------------
+        #--------------------------------------------------
+
+        self.memory_clear_last_chats_btn = ClearLastChatButton()
+
+        self.memory_options_row.addWidget(self.memory_clear_last_chats_btn)
+
+        self.memory_clear_last_chats_btn.clicked.connect(self.signals.clear_last_chats.emit)
+        
+#__________________________________________________________________________________________________________
+        
+        #--------------------------------------------------  
+        #--------------- MODEL PARAMETERS ----------------- 
+        #--------------------------------------------------
+
         # Options: temperature, top_p, max_tokens, frequency_penalty, presence_penalty
 
-        # Define Columns
-        self.model_params_col1 = QVBoxLayout()
-        self.model_params_col1.setContentsMargins(0,0,0,0)
-        self.model_params_col2 = QVBoxLayout()
-        self.model_params_col2.setContentsMargins(0,0,0,0)
+        #--------------- CORE LAYOUT ----------------- 
+        #
+        #|--------------------------------|
+        #|                                |
+        #|   |-----|   |-----|  |-----|   |
+        #|   |     |   |     |  |     |   |
+        #|   |     |   |     |  |     |   |
+        #|   |     |   |     |  |     |   |
+        #|   |     |   |     |  |     |   |
+        #|   |-----|   |-----|  |     |   |
+        #|                      |     |   |
+        #|                      |     |   |
+        #|   |-----|   |-----|  |     |   |
+        #|   |     |   |     |  |     |   |
+        #|   |     |   |     |  |     |   |
+        #|   |     |   |     |  |     |   |
+        #|   |     |   |     |  |     |   |
+        #|   |-----|   |-----|  |-----|   |
+        #|                                |
+        #|--------------------------------|
 
-        # Define rows
-        self.model_params_row1 = QHBoxLayout()
-        self.model_params_row1.setContentsMargins(0,0,0,0)
-        self.model_params_row2 = QHBoxLayout()
-        self.model_params_row2.setContentsMargins(0,0,0,0)
+        self.params_main_layout = QHBoxLayout()
 
-        # Make Labels
+        self.params_right_column = QVBoxLayout()
+
+        self.params_left_column = QVBoxLayout()
+
+        self.params_left_column_row_1 = QHBoxLayout()
+        self.params_left_column_row_2 = QHBoxLayout()
+
+        # Add rows to left columns
+        self.params_left_column.addLayout(self.params_left_column_row_1)
+        self.params_left_column.addLayout(self.params_left_column_row_2)
+
+        # Add Columns to Main layout in between two strectchs
+        self.params_main_layout.addStretch()
+
+        self.params_main_layout.addLayout(self.params_left_column)
+        self.params_main_layout.addLayout(self.params_right_column)
+
+        self.params_main_layout.addStretch()
+
+        # Add main widget to the collapisble
+        self.params_collapsible = CollapsibleLayout("Model Parameters", self.params_main_layout)
+
+        self.sidebar_layout.addWidget(self.params_collapsible)
+
+        #--------------------------------------------------  
+        #--------------------- TEMP -----------------------
+        #--------------------------------------------------
+
+        # Make Label
         temp_lab = QLabel("Temp")
-        topP_lab = QLabel("Top P")
-        tokens_lab = QLabel("Tokens")
-        repeat_lab = QLabel("Rep")
-        topK_lab = QLabel("Top K")
-        temp_lab.setStyleSheet(self._label_styles)
-        topP_lab.setStyleSheet(self._label_styles)
-        tokens_lab.setStyleSheet(self._label_styles)
-        repeat_lab.setStyleSheet(self._label_styles)
-        topK_lab.setStyleSheet(self._label_styles)
-
-        # Define widgets
-        # Temp
+        temp_lab.setStyleSheet(LABEL_STYLES)
+        
         self.temp_control = ModelParamSlider(
-            min=0.0, max=2.0, default=0.9, width=53, 
+            min=0.0, max=2.0, default=0.9, width=70, 
             name="ModelTemp", title=temp_lab
         )
-        self.model_params_row1.addWidget(self.temp_control, alignment=Qt.AlignmentFlag.AlignLeft)
-        # Top P
+
+        self.params_left_column_row_1.addWidget(self.temp_control, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        #--------------------------------------------------  
+        #--------------------- TOP P ----------------------
+        #--------------------------------------------------
+
+        # Make Label
+        topP_lab = QLabel("Top P")
+        topP_lab.setStyleSheet(LABEL_STYLES)        
+
         self.topP_control = ModelParamSlider(
-            min=0.0, max=1.0, default=0.9, width=53, 
+            min=0.0, max=1.0, default=0.9, width=70, 
             name="ModelTopP", title=topP_lab
         )
-        self.model_params_row1.addWidget(self.topP_control, alignment=Qt.AlignmentFlag.AlignLeft)
-        # Repeat Penalty
+
+        self.params_left_column_row_1.addWidget(self.topP_control, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        #--------------------------------------------------  
+        #--------------------- Repeat ---------------------
+        #--------------------------------------------------
+
+        # Make Label
+        repeat_lab = QLabel("Rep")
+        repeat_lab.setStyleSheet(LABEL_STYLES)
+      
         self.repeat_control = ModelParamSlider(
-            min=1.0, max=2.0, default=1.1, width=53, 
+            min=1.0, max=2.0, default=1.1, width=70, 
             name="ModelRepeatPenalty", title=repeat_lab
         )
-        self.model_params_row2.addWidget(self.repeat_control, alignment=Qt.AlignmentFlag.AlignLeft)
-        # Top K control
+
+        self.params_left_column_row_2.addWidget(self.repeat_control, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        #--------------------------------------------------  
+        #--------------------- Top K ----------------------
+        #--------------------------------------------------
+
+        # Make Label
+        topK_lab = QLabel("Top K")
+        topK_lab.setStyleSheet(LABEL_STYLES)
+      
         self.topK_control = ModelParamSlider(
-            min=0, max=100, default=40, width=53, precision=1, decimals=0,
+            min=0, max=100, default=40, width=70, precision=1, decimals=0,
             name="ModelTopK", title=topK_lab
         )
-        self.model_params_row2.addWidget(self.topK_control, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.params_left_column_row_2.addWidget(self.topK_control, alignment=Qt.AlignmentFlag.AlignLeft)
 
-        # Add rows to col 1
-        self.model_params_col1.addLayout(self.model_params_row1)
-        self.model_params_col1.addLayout(self.model_params_row2)
+        #--------------------------------------------------  
+        #--------------------- TOKENS ---------------------
+        #--------------------------------------------------
 
-        # Create token limit widget and add to col 2
-        # Token Limit
+        # Make Label
+        tokens_lab = QLabel("Tokens")
+        tokens_lab.setStyleSheet(LABEL_STYLES)
+
         self.token_control = ModelParamSlider(
-            default=4, width=57, decimals=0, custom_scale=[16, 64, 128, 256, 512, 1024, 2048, 4096],
+            default=4, width=75, decimals=0, custom_scale=TOKEN_SCALE,
             name="ModelTokenLimit", title=tokens_lab, height=306
         )
-        self.model_params_col2.addWidget(self.token_control, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.params_right_column.addWidget(self.token_control, alignment=Qt.AlignmentFlag.AlignHCenter)
 
-
-        # Add Cols to vertical layout
-        self.model_params_layout = QHBoxLayout()
-        self.model_params_layout.addLayout(self.model_params_col1)
-        self.model_params_layout.addLayout(self.model_params_col2)
-        self.model_params_layout.addStretch()
-
-        self.model_params_wrapper = CollapsibleLayout("Model Parameters", self.model_params_layout)
-
-        self._layout.addWidget(self.model_params_wrapper)
-
-        #------------------------------------------------------------------------------------
-
-        # A section that contains quick preset buttons for model parameters
-
-        self.param_presets_layout = QVBoxLayout()
-        self.param_presets_layout.setSpacing(5)
-        self.param_presets_layout.setContentsMargins(1,1,1,1)
-        self.param_presets_wrapper = CollapsibleLayout("Param Presets", self.param_presets_layout)
+#__________________________________________________________________________________________________________
         
-        # A Dictionary to hold the iteratively generated buttons
-        self.param_presets = {}
+        #--------------------------------------------------  
+        #--------------- PARAMETERS PRESETS --------------- 
+        #--------------------------------------------------
 
-        # Make a button for each preset
-        for preset_key, preset in PARAM_PRESETS.items():
-            btn = PresetParamsButton(preset_key.replace(" ", ""), preset_key, 
-                                     preset, callback=self.activatePreset)
-            self.param_presets[preset_key] = btn
-            self.param_presets_layout.addWidget(btn)
+        # LAYOUT 
 
-        self._layout.addWidget(self.param_presets_wrapper)
+        # |--------------------|
+        # |  (   default    )  |
+        # |  (   default    )  |
+        # |  (   default    )  |
+        # |--------------------|
 
-        #------------------------------------------------------------------------------------
+        self.presets_layout = QVBoxLayout()
 
-        # A section to toggle on and off certain tool functions
-        self.tool_toggles_layout = QVBoxLayout()
-        self.tool_toggles_layout.setSpacing(5)
-        self.tool_toggles_layout.setContentsMargins(1,1,1,1)
-        self.tool_wrapper = CollapsibleLayout("Toggle Tools", self.tool_toggles_layout)
-        self._layout.addWidget(self.tool_wrapper)
+        #~~ ~~ ~~ ~~ ~~ ~~ ~~ STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~ ~~
+        self.presets_layout.setSpacing(5)
+        self.presets_layout.setContentsMargins(1,1,1,1)
 
-        #------------------------------------------------------------------------------------
+        self.presets_collapsible = CollapsibleLayout("Param Presets", self.presets_layout)
+        
+        self.sidebar_layout.addWidget(self.presets_collapsible)
+
+        # This field is populated iteratively by the SideBar Method addPresets 
+
+
+#__________________________________________________________________________________________________________
+        
+        #--------------------------------------------------  
+        #--------------- TOOL ACTIVATIONS ----------------- 
+        #--------------------------------------------------
+
+        # A LIST OF TOOL TOGGLE OBJECT TO REFRENCE TO FIND THE ACTIVATED ONES
+        self.TOOL_REFERENCE_DICT = {}
+        # LAYOUT 
+
+        # |--------------------|
+        # |  (   TOOL  [X]  )  |
+        # |  (   TOOL  [ ]  )  |
+        # |  (   TOOL  [X]  )  |
+        # |--------------------|
+
+        self.tool_activation_layout = QVBoxLayout()
+                
+        #~~ ~~ ~~ ~~ ~~ ~~ ~~ STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~ ~~
+        self.tool_activation_layout.setSpacing(5)
+        self.tool_activation_layout.setContentsMargins(1,1,1,1)
+
+        self.tool_activation_collapsible = CollapsibleLayout("Toggle Tools", self.tool_activation_layout)
+
+        self.sidebar_layout.addWidget(self.tool_activation_collapsible)
+
+        # This field is populated iteratively by the SideBar Method addTools
+
+#__________________________________________________________________________________________________________
+        
+        #--------------------------------------------------  
+        #------------------ UMAP PLOT ---------------------
+        #--------------------------------------------------
+
+        self.plot_layout = QVBoxLayout()
+        
+        #~~ ~~ ~~ ~~ ~~ ~~ ~~ STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~ ~~
+        self.plot_layout.setContentsMargins(1,1,1,1)
+
+        self.plot_collapsible = CollapsibleLayout("Plot", self.plot_layout)
+
+        self.sidebar_layout.addWidget(self.plot_collapsible)
+
+        #The Plot object widget
+        self.plot = PlotWindow(272)
+
+        self.plot_layout.addWidget(self.plot)
+
+#__________________________________________________________________________________________________________
 
         # Stretch
-        self._layout.addStretch()
+        self.sidebar_layout.addStretch()
 
-    # Assigns a controller to this sidebar to access prompt settings
-    def setChatController(self, controller: ChatController):
+#__________________________________________________________________________________________________________
+#__________________________________________________________________________________________________________
 
-        # Set Controller
-        self.chat_controller = controller
+    # Populates the presets field from a given dictionary
+    def addPresets(self, preset_dict: dict):
 
-        # Connect options buttons to controller methods
-        #Memory wipe
-        self.memory_wipe_btn.clicked.connect(self.chat_controller.clearMemory)
-        #Window change
-        self.memory_window_selection.valueChanged.connect(self.chat_controller.updateWindowSize)
-        #Clear last message
-        self.mem_clear_last_chat_btn.clicked.connect(self.chat_controller.undo)
-    
-        # Populate the tools list
-        self.addToolToggles(self.chat_controller, self.chat_controller.getTools())
+        for key, preset in preset_dict.items():
+            button = PresetParamsButton(key.replace(" ", ""), key, preset, callback=self.applyPreset)
 
-    # Refractors the Tools drop down and populates it with available content from ChatController
-    def addToolToggles(self, chat_controller: ChatController, registry_names: list):
+            self.presets_layout.addWidget(button)
 
-        reference_dict = {}
+    #Applies a selected preset
+    def applyPreset(self, preset_values: dict):
 
-        for tool in registry_names:
+        self.temp_control.setValue(preset_values["temp"])
+        self.topP_control.setValue(preset_values["topP"])
+        self.topK_control.setValue(preset_values["topK"])
+        self.repeat_control.setValue(preset_values["repeat_penalty"])
 
-            # Add Tool toggle to sidebar
+    def addTools(self, tool_list: list):
+
+        for tool in tool_list:
+
+            # Create Label
             title = QLabel(tool)
-            title.setStyleSheet(self._label_styles)
+            title.setStyleSheet(LABEL_STYLES)
             toggle = ToolToggle(
                 re.sub(r'[^a-zA-Z0-9]', '', tool),  #Clean title to add as object name
                 title
             )
-            self.tool_toggles_layout.addWidget(toggle)
 
-            # Add Title and object reference to dictionary
-            reference_dict[tool] = toggle
+            self.tool_activation_layout.addWidget(toggle)
+            
+            self.TOOL_REFERENCE_DICT[tool] = toggle
+    
+    def getSelectedTools(self):
 
-        # Finish sidebar element with stretch        
-        self.tool_toggles_layout.addStretch()
+        active = []
 
-        # Set ChatControllers reference dictionary to the toggle switches
-        chat_controller.setToolToggleRefrences(reference_dict)
+        for key, value in self.TOOL_REFERENCE_DICT.items():
+            if value.getStatus():
+                active.append(key)
+        return active
 
-    # Sets the 4 core model parameters according to a preset.
-    def activatePreset(self, param_dict: dict):
-        self.temp_control.set_value(param_dict["temp"])
-        self.topP_control.set_value(param_dict["topP"])
-        self.topK_control.set_value(param_dict["topK"])
-        self.repeat_control.set_value(param_dict["repeat_penalty"])
+    def getPromptRelavantData(self):
+
+        return {
+            "system" : self.system_prompt_input.getText(),
+            "temp" : self.temp_control.getValue(),
+            "topP" : self.topP_control.getValue(),
+            "topK" : self.topK_control.getValue(),
+            "rep" : self.repeat_control.getValue(),
+            "tokens" : self.token_control.getValue(),
+            "tools" : self.getSelectedTools()
+        }
+
+    def setPlot(self, html):
+        self.plot.setHtml(html)
 # <<< SIDE BAR <<<

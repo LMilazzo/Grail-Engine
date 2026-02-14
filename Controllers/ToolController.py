@@ -1,16 +1,33 @@
-import random
-from ToolRegistry.get_weather import get_weather
 from ToolRegistry.tavily_search import tavily_search
+from ToolRegistry.get_weather import get_weather
 
 
-# >>> TOOL EXECUTOR >>>
+# >>> TOOL CONTROLLER >>>
 class ToolController():
-    def __init__(self):
-        pass
+    def __init__(self, ToolRegistry: dict, AvailableTools: set):
 
-    # Processes a single tool request
-    def process_request(self, tool_request):
+        #--------------------------------------------------  
+        #---------------- TOOLS AVAILABE ------------------
+        #--------------------------------------------------
+        self._REGISTRY = ToolRegistry
+        self.available = AvailableTools
+
+
+#__________________________________________________________________________________________________________
+
+    def getActiveToolFunctions(self, active: list):
+
+        tools = []
+
+        for t in active:
+            x = self._REGISTRY.get(t, None)
+            if x:
+                tools.append(x)
         
+        return tools
+
+    def processRequest(self, tool_request):
+                
         print("------------------------------------------------------------------------")
         print(f"\033[31m ++ PROCESSING TOOL REQUEST [{tool_request['id']}] [{tool_request['function']['name']}]\033[0m")
         print("------------------------------------------------------------------------")
@@ -34,4 +51,4 @@ class ToolController():
             }
         
         return  response
-# <<< TOOL EXECUTOR <<<
+# <<< TOOL CONTROLLER <<<

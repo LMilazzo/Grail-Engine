@@ -9,36 +9,52 @@ class ToolToggle(StyledWidget):
     def __init__(self, name, title: QLabel):
         super().__init__("ToolToggleContainer"+name)
 
-        self.status = False
+        #--------------------------------------------------  
+        #------------------ CORE LAYOUT ------------------- 
+        #--------------------------------------------------
 
-        self.title = title
-
-        self.checkbox = QCheckBox()
-        self.checkbox.stateChanged.connect(self.update_status)
-        self.checkbox.setObjectName("Toggle"+name)
-
-        # Layout -H-
         layout = QHBoxLayout(self)
 
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.setStyleSheet(f"""
             QWidget#{"ToolToggleContainer"+name} {{
                 border: 1px solid #333333;
                 border-radius: 12%
             }}
         """)
+
+        self.setFixedHeight(40)
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
+
+        # DEFAULT STATUS
+        self.status = False
+
+        # TITLE
+        self.title = title
+
+        #--------------------------------------------------  
+        #--------------- CHECKBOX WIDGET ------------------ 
+        #--------------------------------------------------
+        self.checkbox = QCheckBox()
         
+        self.checkbox.setObjectName("Toggle"+name)
+
+        # mAKE A CONNECTION BETWEEN STATUS UPDATE AND CHECKING
+        self.checkbox.stateChanged.connect(self.update_status)
+
         # Add widgets
         layout.addWidget(self.title)
         layout.addWidget(self.checkbox)
 
         layout.addStretch()
 
-        self.setFixedHeight(35)
+#__________________________________________________________________________________________________________
+
     # Inverts the status of the checkbox
     def update_status(self):
         self.status = not self.status
 
     # Returns the check status
-    def get_status(self):
+    def getStatus(self):
         return self.status
 # <<< TOOL TOGGLE <<<

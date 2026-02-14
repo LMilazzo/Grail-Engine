@@ -10,7 +10,7 @@ class SendPromptButton(QPushButton):
         # Set Name
         self.setObjectName("SendPromptButton")
 
-        # Styling
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.setStyleSheet("""
             QPushButton#SendPromptButton {
                 border: 1px solid white;
@@ -26,4 +26,6 @@ class SendPromptButton(QPushButton):
         # Size
         self.setFixedWidth(50)
         self.setFixedHeight(30)
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
+
 # <<< SEND PROMPT BUTTON <<<

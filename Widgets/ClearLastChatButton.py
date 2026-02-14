@@ -10,7 +10,7 @@ class ClearLastChatButton(QPushButton):
         # Set Name
         self.setObjectName("ClearLastMessageButton")
 
-        # Styling
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.setStyleSheet("""
             QPushButton#ClearLastMessageButton {
                 border: 1px solid white;
@@ -25,4 +25,6 @@ class ClearLastChatButton(QPushButton):
 
         self.setFixedWidth(90)
         self.setFixedHeight(30)
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
+
 # <<< CLEAR LAST CHAT BUTTON <<<

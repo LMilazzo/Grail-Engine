@@ -10,7 +10,7 @@ class ClearHistoryButton(QPushButton):
         # Set Name
         self.setObjectName("ClearHistoryButton")
 
-        # Styling
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.setStyleSheet("""
             QPushButton#ClearHistoryButton {
                 border: 1px solid white;
@@ -25,5 +25,7 @@ class ClearHistoryButton(QPushButton):
 
         self.setFixedWidth(65)
         self.setFixedHeight(30)
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
+
 # <<< CLEAR HISTORY BUTTON <<<
 

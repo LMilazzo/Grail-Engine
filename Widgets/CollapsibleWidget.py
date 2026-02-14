@@ -7,25 +7,40 @@ class CollapsibleWidget(QWidget):
     def __init__(self, title: str, content: QWidget, parent=None):
         super().__init__(parent)
 
-        # Assign content
-        self.content = content
-        self.content.setVisible(False)  # start collapsed
-
+        # TITLE
         self.title = title
 
+        # ACTIVITY PARAMS
         self.active = False
+
         self.active_text = "+ " + self.title + " +"
         self.inactive_text = "- " + self.title + " -"
 
-        # Toggle button
+        #--------------------------------------------------  
+        #---------------- CORE CONTENT -------------------- 
+        #--------------------------------------------------
+        self.content = content
+
+        #--------------------------------------------------  
+        #---------------- TOGGLE BUTTON ------------------- 
+        #--------------------------------------------------
         self.toggle_btn = QPushButton()
-        self.toggle_btn.setText(self.inactive_text)
         self.toggle_btn.setObjectName("toggle")
-       
+
+        self.toggle_btn.setText(self.inactive_text)
+ 
         self.toggle_btn.clicked.connect(self.toggle)
 
-        # Styling
-        self.toggle_btn.setFixedHeight(25)
+        #--------------------------------------------------  
+        #---------------- CORE LAYOUT --------------------- 
+        #--------------------------------------------------
+        layout = QVBoxLayout(self)
+
+        # ADD STUFF
+        layout.addWidget(self.toggle_btn)
+        layout.addWidget(self.content)
+
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.toggle_btn.setStyleSheet("""
             QPushButton#toggle {
                 background-color: #000000;
@@ -39,13 +54,23 @@ class CollapsibleWidget(QWidget):
             }
         """)
 
-        # Layout
-        layout = QVBoxLayout(self)
+        self.content.setVisible(False)  # start collapsed
+
+
+        self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(4)
-        layout.addWidget(self.toggle_btn)
-        layout.addWidget(self.content)
-        self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+
+        self.toggle_btn.setFixedHeight(25)
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
+
+
+        
+
+
+#__________________________________________________________________________________________________________
+
 
     # toggles the section up or down
     def toggle(self):

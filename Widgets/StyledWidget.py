@@ -6,6 +6,9 @@ from PyQt6.QtGui import *
 class StyledWidget(QWidget):
     def __init__(self, object_name: str, parent=None):
         super().__init__(parent)
+
         self.setObjectName(object_name)
+
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-# <<< TYLED WIDGET <<<
+
+# <<< STYLED WIDGET <<<

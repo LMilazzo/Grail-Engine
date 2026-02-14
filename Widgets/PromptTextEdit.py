@@ -2,23 +2,35 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 
-# >>> PROMPT TEXT EDIT SIGNALS >>>
+#**************  SIGNALS *****************
 class PromptTextEditSignals(QObject):
-    sendRequested = pyqtSignal()
-# <<< PROMPT TEXT EDIT SIGNALS <<<
+
+    #Emits a signal when the enter key is pressed sending the prompt
+    enter_pressed = pyqtSignal()
+
+#**************  SIGNALS *****************
 
 # >>> PROMPT TEXT EDIT >>>
 class PromptTextEdit(QTextEdit):
     def __init__(self):
         super().__init__()
+
+        #**************  SIGNALS *****************
         self.signals = PromptTextEditSignals()
 
+#__________________________________________________________________________________________________________
+
+    #Connects the 'Enter' or 'Return' Key to the 'enter_pressed' signal
     def keyPressEvent(self, event):
+        
         # Enter → send
         if event.key() == Qt.Key.Key_Return and not event.modifiers():
-            self.signals.sendRequested.emit()
+
+            self.signals.enter_pressed.emit()
+
             event.accept()
-        # Shift+Enter → newline
+
         else:
             super().keyPressEvent(event)
+
 # <<< PROMPT TEXT EDIT <<<

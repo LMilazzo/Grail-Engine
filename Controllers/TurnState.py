@@ -4,14 +4,16 @@ import json
 class TurnState():
     def __init__(self, prompt_payload):
         
-        # Original prompt
+        # ORIGINAL PROMPT
         self.payload = prompt_payload
 
-        # List of messages
+        # MESSAGE LIST
         self.message_list = prompt_payload["messages"]
 
-        # The current most recent assistant response
+        # THE MOST RECENT RESPONSE
         self.last_response = ""
+
+#__________________________________________________________________________________________________________
 
     # Adds a message to the propmt message list
     def _add_message(self, message):
@@ -27,17 +29,19 @@ class TurnState():
     
     def getLastResponse(self):
         return self.last_response
-    
+#__________________________________________________________________________________________________________
+
     # Adds a whole list of requests to the message list
-    def add_tool_requests(self, request_list):
+    def addToolRequests(self, request_list):
         #print("adding")
         message = {"role" : "assistant", "tool_calls" : request_list}
         #print(message)
         self._add_message(message)
 
     # Adds a tool response to the message list
-    def add_tool_response(self, tool_response):
+    def addToolResponse(self, tool_response):
         self._add_message(tool_response)
+#__________________________________________________________________________________________________________
 
     def print(self):
         print(json.dumps(self.payload, indent=2))

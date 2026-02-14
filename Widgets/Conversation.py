@@ -10,32 +10,36 @@ class Conversation(StyledWidget):
     def __init__(self, parent=None):
         super().__init__("Conversation")
 
-        # Scroll area
+        #--------------------------------------------------  
+        #--------------- SCROLL CONTAINER ----------------- 
+        #--------------------------------------------------
+        layout = QVBoxLayout(self)
         self.scroll_area = QScrollArea()
         self.scroll_area.setObjectName("ChatScrollArea")
+
+        #Container Layout -V-
+        layout.addWidget(self.scroll_area)
+
+        #~~ ~~ ~~ ~~ ~~ ~~ ~~ STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        # Internal container
+        #--------------------------------------------------  
+        #-------------- MESSAGE CONTAINER ----------------- 
+        #--------------------------------------------------
         self.messages = StyledWidget("Messages")
-        self.mlayout = QVBoxLayout(self.messages)
+        self.MESSAGE_layout = QVBoxLayout(self.messages)
 
-        # Message Spacing
-        self.mlayout.setSpacing(15)
-        self.mlayout.setContentsMargins(8, 8, 8, 8)
-        self.mlayout.addStretch()
+        #~~ ~~ ~~ ~~ ~~ ~~ ~~ STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~ ~~
+        self.MESSAGE_layout.setSpacing(15)
+        self.MESSAGE_layout.setContentsMargins(8, 8, 8, 8)
+        self.MESSAGE_layout.addStretch()
 
-        # Set as content widget
+        # CONNECT SCROLL AREA AND MESSAGE CONTAINER
         self.scroll_area.setWidget(self.messages)
 
-        #Message Horz spacing
-        self.HORIZONTAL_MARGIN = 15
 
-        #Container Layout -V-
-        self.layout = QVBoxLayout(self)
-        self.layout.addWidget(self.scroll_area)
-
-        # Styling
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.setStyleSheet("""
             QWidget#Conversation {
                 background-color: #000000;
@@ -51,4 +55,6 @@ class Conversation(StyledWidget):
                 background-color: transparent;
             }
         """)
+        #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
+
 # <<< CONVERSATION AREA <<<

@@ -321,8 +321,6 @@ class SideBar(StyledWidget):
         #--------------- TOOL ACTIVATIONS ----------------- 
         #--------------------------------------------------
 
-        # A LIST OF TOOL TOGGLE OBJECT TO REFRENCE TO FIND THE ACTIVATED ONES
-        self.TOOL_REFERENCE_DICT = {}
         # LAYOUT 
 
         # |--------------------|
@@ -369,61 +367,6 @@ class SideBar(StyledWidget):
         self.sidebar_layout.addStretch()
 
 #__________________________________________________________________________________________________________
-#__________________________________________________________________________________________________________
-
-    # Populates the presets field from a given dictionary
-    def addPresets(self, preset_dict: dict):
-
-        for key, preset in preset_dict.items():
-            button = PresetParamsButton(key.replace(" ", ""), key, preset, callback=self.applyPreset)
-
-            self.presets_layout.addWidget(button)
-
-    #Applies a selected preset
-    def applyPreset(self, preset_values: dict):
-
-        self.temp_control.setValue(preset_values["temp"])
-        self.topP_control.setValue(preset_values["topP"])
-        self.topK_control.setValue(preset_values["topK"])
-        self.repeat_control.setValue(preset_values["repeat_penalty"])
-
-    def addTools(self, tool_list: list):
-
-        for tool in tool_list:
-
-            # Create Label
-            title = QLabel(tool)
-            title.setStyleSheet(LABEL_STYLES)
-            toggle = ToolToggle(
-                re.sub(r'[^a-zA-Z0-9]', '', tool),  #Clean title to add as object name
-                title
-            )
-
-            self.tool_activation_layout.addWidget(toggle)
-            
-            self.TOOL_REFERENCE_DICT[tool] = toggle
     
-    def getSelectedTools(self):
 
-        active = []
-
-        for key, value in self.TOOL_REFERENCE_DICT.items():
-            if value.getStatus():
-                active.append(key)
-        return active
-
-    def getPromptRelavantData(self):
-
-        return {
-            "system" : self.system_prompt_input.getText(),
-            "temp" : self.temp_control.getValue(),
-            "topP" : self.topP_control.getValue(),
-            "topK" : self.topK_control.getValue(),
-            "rep" : self.repeat_control.getValue(),
-            "tokens" : self.token_control.getValue(),
-            "tools" : self.getSelectedTools()
-        }
-
-    def setPlot(self, html):
-        self.plot.setHtml(html)
 # <<< SIDE BAR <<<

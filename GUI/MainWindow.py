@@ -104,16 +104,6 @@ class MainWindow(QMainWindow):
         #--------------------------------------------------
         self._DATALOADER = DataLoader()
 
-        # FINSIH UI ELEMENTS THAT WERE AWAITING DATA
-
-        # MODEL SELECTION
-        self._PROMPT_AREA.setModels(self._DATALOADER.getModels())
-
-        # PARAMETER PRESETS
-        self._SIDEBAR.addPresets(self._DATALOADER.getPresets())
-
-        # TOOL TOGGLES
-        self._SIDEBAR.addTools(self._DATALOADER.getToolKeys())
 
         #--------------------------------------------------  
         #------------------- APP MEDIATOR ----------------- 

@@ -12,6 +12,7 @@ from Controllers.OllamaController import OllamaController
 from Controllers.ToolController import ToolController
 from Controllers.ModelRunner import ModelRunner
 from Controllers.PlotController import PlotController
+from Controllers.SideBarController import SideBarController
 
 # >>> APP MEDIATOR >>>
 class AppMediator():
@@ -31,7 +32,7 @@ class AppMediator():
         #--------------------------------------------------
         self.ChatController = ChatController(self.ChatArea)
 
-        self.SideBarController = None
+        self.SideBarController = SideBarController(self.SideBar)
 
         self.PlotController = PlotController()
 
@@ -49,6 +50,21 @@ class AppMediator():
 
         self.ModelRunner = ModelRunner()
         self.ModelRunnerThread = QThread()
+
+        #--------------------------------------------------  
+        #-------------- FINISH UI ELEMENTS ---------------- 
+        #--------------------------------------------------
+
+        # FINSIH UI ELEMENTS THAT WERE AWAITING DATA
+
+        # MODEL SELECTION
+        self.PromptArea.setModels(self.DataLoader.getModels())
+
+        # PARAMETER PRESETS
+        self.SideBarController.addPresets(self.DataLoader.getPresets())
+
+        # TOOL TOGGLES
+        self.SideBarController.addTools(self.DataLoader.getToolKeys())
 
         #--------------------------------------------------  
         #--------------- CONNECT SIGNALS-------------------
@@ -93,15 +109,15 @@ class AppMediator():
 
     def connectSideBarSignals(self):
 
-        self.SideBar.setPlot(self.PlotController.plot())
+        self.SideBarController.setPlot(self.PlotController.plot())
 
         self.SideBar.signals.clear_chat.connect(self.MemoryController.clear)
         self.SideBar.signals.clear_chat.connect(self.ChatController.clear)
-        self.SideBar.signals.clear_chat.connect(lambda: self.SideBar.setPlot(self.PlotController.clear()))
+        self.SideBar.signals.clear_chat.connect(lambda: self.SideBarController.setPlot(self.PlotController.clear()))
 
         self.SideBar.signals.clear_last_chats.connect(self.MemoryController.undo)
         self.SideBar.signals.clear_last_chats.connect(self.ChatController.undo)
-        self.SideBar.signals.clear_last_chats.connect(lambda: self.SideBar.setPlot(self.PlotController.clearLast()))
+        self.SideBar.signals.clear_last_chats.connect(lambda: self.SideBarController.setPlot(self.PlotController.clearLast()))
 
     def _init_ModelRunner(self):
 
@@ -124,9 +140,10 @@ class AppMediator():
 
         # CONNECT PLOT REDUCER RETURN TO PLOT UPDATING
         self.ModelRunner.signals.plot_reducer_return.connect(
-            lambda datalist: self.SideBar.setPlot(self.PlotController.addDataPlot(datalist))
+            lambda datalist: self.SideBarController.setPlot(self.PlotController.addDataPlot(datalist))
         )
 
+        # TREADING and START
         self.ModelRunner.moveToThread(self.ModelRunnerThread)
         
         self.ModelRunnerThread.start()
@@ -136,7 +153,9 @@ class AppMediator():
 #__________________________________________________________________________________________________________
 
     def handlePrompt(self, model: str, prompt: str):
-        params = self.SideBar.getPromptRelavantData()
+        
+        params = self.SideBarController.getPromptRelavantData()
+        
         params["model"] = model
         params["prompt"] = prompt
 

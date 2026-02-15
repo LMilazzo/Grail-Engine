@@ -143,4 +143,4 @@ class ChatController():
 
 
 
-# <<< APP MEDIATOR <<<
+# <<< CHAT CONTROLLER <<<

@@ -111,6 +111,8 @@ class AppMediator():
 
         self.SideBarController.setPlot(self.PlotController.plot())
 
+        self.SideBar.signals.window_update.connect(self.MemoryController.rebuild_deque)
+
         self.SideBar.signals.clear_chat.connect(self.MemoryController.clear)
         self.SideBar.signals.clear_chat.connect(self.ChatController.clear)
         self.SideBar.signals.clear_chat.connect(lambda: self.SideBarController.setPlot(self.PlotController.clear()))
@@ -160,7 +162,6 @@ class AppMediator():
         params["prompt"] = prompt
 
         self.ChatController.addPrompt(params)
-
         params["history"] = self.MemoryController.getRecent()
 
         params["tools"] = self.ToolController.getActiveToolFunctions(params["tools"])

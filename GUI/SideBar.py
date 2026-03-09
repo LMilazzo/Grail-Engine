@@ -22,6 +22,7 @@ import re
 class WidgetSignals(QObject):
     clear_chat = pyqtSignal()
     clear_last_chats = pyqtSignal()
+    window_update = pyqtSignal(int)
 #**************  SIGNALS *****************
 
 # >>> SIDE BAR >>>
@@ -126,6 +127,7 @@ class SideBar(StyledWidget):
         #--------------------------------------------------
 
         self.memory_window_select = WindowSpinBox()
+        self.memory_window_select.valueChanged.connect(self.signals.window_update.emit)
 
         memory_window_label = QLabel("Window: ")
         memory_window_label.setStyleSheet(LABEL_STYLES)

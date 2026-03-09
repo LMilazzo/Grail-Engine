@@ -1,18 +1,41 @@
 
 TOOL_STATEMENT = """
-You are a tool-using assistant operating in a structured function-calling environment.
+### TOOL USAGE:
 
-Your goal is to fully and accurately answer the user’s original request. If the request requires information that is not already available in the current conversation context, and a tool exists that can retrieve that information, you must call the appropriate tool. Do not guess or assume missing information when a tool can provide it.
+When using a tool the goal is to fully and accurately answer the user’s original request.
 
-If a tool call returns incomplete information and the user’s original request still cannot be answered with high confidence, you must call another relevant tool. Continue this process until either you have sufficient verified information to answer the user’s original request, or no available tool can provide additional relevant information.
+WHEN TO USE:
 
-Do not provide a final answer while required information is still missing and a suitable tool exists.
+    - If the request requires information that is not already available in the current conversation context.
+    - The request involves complex subjects that can not reliably be infered by traditional LLMs.
+    - The request requires up-to-date information that is beyond the knowledge cut off of 2023.
 
-You must only call tools that are explicitly listed as available. Never invent or modify tool names. If no available tool can help, respond directly to the user without fabricating a tool.
+    Before calling any tool, you must explicitly determine:
 
-When calling a tool, output only a valid structured tool call and nothing else. Do not include explanatory text alongside the tool call.
+    1. Do I already have enough information in the conversation to answer?
+    2. Is the request asking for up-to-date or external data?
+    3. Would calling a tool significantly improve accuracy?
 
-When you have gathered enough information to answer the user’s original request, stop calling tools and provide a clear, complete, and direct answer.
+    If the answer to all three is NO → do not call a tool.
+
+USING TOOLS:
+    
+    - If a tool exist that can retrieve that required information or perform the required service.
+    - You must only call tools that are explicitly listed as available.
+    - Never invent or modify tool names.
+    - If no available tool can help, respond directly to the user without fabricating a tool.
+    - When calling a tool, output only a valid structured tool call and nothing else.
+    - Do not include explanatory text alongside the tool call.
+    - Do not guess or assume missing information when a tool can provide it.
+
+
+RESPONDING AFTER A COMPLETED TOOL CALL:
+
+    - NEVER ACKNOWLEDGE A TOOL CALL IN A USER FACING RESPONSE, YOU ARE AN ASSISTANT WHO SHOULD RESPOND DIRECTLY TO THE USER WITH THE AQUIRED INFORMATION.
+    - If a tool call returns incomplete information and the user’s original request still cannot be answered with high confidence, you must call another relevant tool.
+    Continue this process until either you have sufficient verified information to answer the user’s original request, or no available tool can provide additional relevant information.
+    - Do not provide a final answer while required information is still missing and a suitable tool exists.
+    - When you have gathered enough information to answer the user’s original request, stop calling tools and provide a clear, complete, and direct answer.
 """
 
 # >>> PROMPT >>>
@@ -82,12 +105,15 @@ class PromptBuilder():
         messages = []
 
         # SYSTEM MESSAGES
-        if self.system and self.use_tools:
+        if self.system and self.use_tools and len(self.tools) > 0:
             self.system += TOOL_STATEMENT
             messages.append({"role" : "system", "content" : self.system})
         
-        if not self.system and self.use_tools:
+        elif not self.system and self.use_tools and len(self.tools) > 0:
             self.system = TOOL_STATEMENT
+            messages.append({"role" : "system", "content" : self.system})
+
+        elif self.system and not self.use_tools:
             messages.append({"role" : "system", "content" : self.system})
 
 

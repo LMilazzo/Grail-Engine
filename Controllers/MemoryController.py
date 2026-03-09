@@ -57,7 +57,6 @@ class MemoryController():
 
     # Rebulds the recent messages deque with a new window size from the full conversation history
     def rebuild_deque(self, window: int):
-        
         # CLEAR THE DEQUEUE
         self.recent.clear() 
 

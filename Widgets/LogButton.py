@@ -59,7 +59,7 @@ class LogButton(StyledWidget):
 
         self.rename_button = QPushButton()
         self.rename_button.setObjectName("renameButton")
-        self.rename_button.setIcon(QIcon("Assets/SVG/Untitled.svg"))
+        self.rename_button.setIcon(QIcon("Assets/SVG/Rename.svg"))
         self.rename_button.setIconSize(QSize(24, 24))
         self.rename_button.setToolTip("Rename")
 

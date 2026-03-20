@@ -1,4 +1,6 @@
 from PyQt6.QtWidgets import *
+from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import QSize
 
 from GUI.SideBar import SideBar
 from GUI.ChatArea import ChatArea
@@ -22,7 +24,10 @@ class MainWindow(QMainWindow):
         #--------------------------------------------------  
 
         # Window Title
-        self.setWindowTitle("--- Ollama Chat App ---")
+        self.setWindowTitle(" ")
+        self.setWindowIcon(QIcon("Assets/SVG/Logo.svg"))
+        self.setIconSize(QSize(16, 32))
+
         
         # Window Size
         self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)

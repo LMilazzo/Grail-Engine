@@ -11,4 +11,7 @@ class StyledWidget(QWidget):
 
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
 
+    def setName(self, name):
+        self.setObjectName(name)
+
 # <<< STYLED WIDGET <<<

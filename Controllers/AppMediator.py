@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QThread, QMetaObject, Qt, Q_ARG
+from PyQt6.QtCore import QThread, QMetaObject, Qt, Q_ARG, QTimer
 from PyQt6.QtGui import QColor
 
 from GUI.PromptArea import PromptArea
@@ -40,9 +40,10 @@ class AppMediator():
         #-------------- LOGIC CONTROLLERS -----------------
         #--------------------------------------------------
 
-        self.DataLoader = DataLoader
-
         self.MemoryController = MemoryController(window=12)
+
+        self.DataLoader = DataLoader
+        self.DataLoader.pullLogs()
 
         self.ToolController = ToolController(self.DataLoader.getOllamaTools(), self.DataLoader.getToolKeys())
 
@@ -62,6 +63,9 @@ class AppMediator():
 
         # PARAMETER PRESETS
         self.SideBarController.addPresets(self.DataLoader.getPresets())
+
+        # SET LOGS
+        self.SideBarController.setLogs(self.DataLoader.getLogs())
 
         # TOOL TOGGLES
         self.SideBarController.addTools(self.DataLoader.getToolKeys())
@@ -113,13 +117,22 @@ class AppMediator():
 
         self.SideBar.signals.window_update.connect(self.MemoryController.rebuild_deque)
 
+        # CLEAR MESSAGES AND HISTORY
         self.SideBar.signals.clear_chat.connect(self.MemoryController.clear)
         self.SideBar.signals.clear_chat.connect(self.ChatController.clear)
         self.SideBar.signals.clear_chat.connect(lambda: self.SideBarController.setPlot(self.PlotController.clear()))
 
+        # UNDO MESSAGE
         self.SideBar.signals.clear_last_chats.connect(self.MemoryController.undo)
         self.SideBar.signals.clear_last_chats.connect(self.ChatController.undo)
         self.SideBar.signals.clear_last_chats.connect(lambda: self.SideBarController.setPlot(self.PlotController.clearLast()))
+
+        # START NEW CHAT
+        self.SideBar.signals.start_new_chat.connect(self.MemoryController.clear)
+        self.SideBar.signals.start_new_chat.connect(self.ChatController.clear)
+        self.SideBar.signals.start_new_chat.connect(self.MemoryController.newLog_init_)
+        self.SideBar.signals.start_new_chat.connect(lambda: self.SideBarController.setPlot(self.PlotController.clear()))
+        self.SideBar.signals.start_new_chat.connect(lambda: self.SideBarController.setLogs(self.DataLoader.pullLogs()))
 
     def _init_ModelRunner(self):
 

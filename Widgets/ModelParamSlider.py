@@ -7,7 +7,7 @@ from Widgets.StyledWidget import StyledWidget
 # >>> MODEL PARAMETER SLIDER >>>
 class ModelParamSlider(StyledWidget):
     def __init__(self, default: float, width: int, title: QLabel, name: str, 
-                 max=2.0, min=0.0, decimals=3, precision = 200.0, height = 150,
+                 max=2.0, min=0.0, decimals=3, precision=200.0, height=150,
                  custom_scale = None, orientation=Qt.Orientation.Vertical):
         
         super().__init__("Container"+name)
@@ -16,7 +16,10 @@ class ModelParamSlider(StyledWidget):
         #------------------ CORE LAYOUT ------------------- 
         #--------------------------------------------------
 
-        layout = QVBoxLayout(self)
+        if orientation == Qt.Orientation.Vertical:
+            layout = QVBoxLayout(self)
+        else: 
+            layout = QHBoxLayout(self)
 
         # TITLE
         self.title = title
@@ -78,8 +81,6 @@ class ModelParamSlider(StyledWidget):
         layout.addWidget(self.value_label, alignment=Qt.AlignmentFlag.AlignHCenter)
         layout.addWidget(self.slider, alignment=Qt.AlignmentFlag.AlignHCenter)
         
-
-
         #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~
         self.setStyleSheet(f"""
             QWidget#{"Container"+name} {{
@@ -106,7 +107,12 @@ class ModelParamSlider(StyledWidget):
 
         # Sizing
         self.setFixedWidth(width)
-        self.slider.setFixedWidth(int(width/2))
+
+        if orientation == Qt.Orientation.Vertical:
+            self.slider.setFixedWidth(int(width/2))
+        else: 
+            self.slider.setFixedWidth(width - 100)
+
         self.setFixedHeight(height)
         self.setContentsMargins(0,0,0,0)
         #~~ ~~ ~~ ~~ ~~ ~~~ MAIN STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~

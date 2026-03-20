@@ -32,7 +32,6 @@ class ModelRunner(QObject):
 #__________________________________________________________________________________________________________
     
     def loadEmbedder(self):
-
         self._EMBEDDER = SentenceTransformer("all-MiniLM-L6-v2")
 
     @pyqtSlot(str, str)

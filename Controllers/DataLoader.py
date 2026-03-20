@@ -1,5 +1,6 @@
 import pandas as pd
 import json
+import os
 
 from Utils.OllamaUtils import listModels
 from Model_Presets.Param_Presets import PARAM_PRESETS
@@ -24,11 +25,16 @@ class DataLoader():
         #---------------------------------------------
         self.tool_keys = AVAILABLE_TOOLS
         self.ollama_tools = OLLAMA_TOOLS
+
+        #---------------------------------------------
+        #------------ PREVIOUS CHATS -----------------
+        #---------------------------------------------
+        self.logs = None
         
 #__________________________________________________________________________________________________________
 
     def getModels(self):
-        return self.models
+        return ["llama3.1:8b"]#self.models 
     
     def getPresets(self):
         return self.presets
@@ -38,6 +44,13 @@ class DataLoader():
     
     def getToolKeys(self):
         return self.tool_keys
+    
+    def getLogs(self):
+        return self.logs
 
+    def pullLogs(self):
+        l = os.listdir("HISTORY/LOGS")
+        self.logs = l
+        return l
     
 # <<< DATA LOADER <<<

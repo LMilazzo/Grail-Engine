@@ -15,6 +15,7 @@ from Widgets.ModelParamSlider import ModelParamSlider
 from Widgets.ToolToggle import ToolToggle
 from Widgets.PresetParamsButton import PresetParamsButton
 from Widgets.PlotWindow import PlotWindow
+from Widgets.StartNewChatButton import StartNewChatButton
 
 import re
 
@@ -23,6 +24,7 @@ class WidgetSignals(QObject):
     clear_chat = pyqtSignal()
     clear_last_chats = pyqtSignal()
     window_update = pyqtSignal(int)
+    start_new_chat = pyqtSignal()
 #**************  SIGNALS *****************
 
 # >>> SIDE BAR >>>
@@ -111,33 +113,43 @@ class SideBar(StyledWidget):
         #--------------------------------------------------
 
         # LAYOUT 
-        # |  WINDOW SIZE    CLEAR CHAT    CLEAR LAST MESSAGES |
-        
-        self.memory_options_row = QHBoxLayout()
+        # |  WINDOW SIZE  ------------------------0---------  |
+        # |  CLEAR CHAT    CLEAR LAST MESSAGES     NEW CHAT   |
 
-        self.memory_options_collapsible = CollapsibleLayout("Memory Options", self.memory_options_row)
+        self.memory_options_main_layout = QVBoxLayout()
+
+        self.memory_options_row1 = QHBoxLayout()
+        self.memory_options_row2 = QHBoxLayout()
+
+        # Add rows
+        self.memory_options_main_layout.addLayout(self.memory_options_row1)
+        self.memory_options_main_layout.addLayout(self.memory_options_row2)
+
+        self.memory_options_collapsible = CollapsibleLayout("Memory Options", self.memory_options_main_layout)
 
         self.sidebar_layout.addWidget(self.memory_options_collapsible)
 
         #~~ ~~ ~~ ~~ ~~ ~~ ~~ STYLE ~~ ~~ ~~ ~~ ~~ ~~ ~~ ~~
-        self.memory_options_row.setSpacing(3)
+        self.memory_options_row2.setSpacing(3)
 
         #--------------------------------------------------  
         #------------ MESSAGE WINDOW SELECT ---------------
         #--------------------------------------------------
 
-        self.memory_window_select = WindowSpinBox()
-        self.memory_window_select.valueChanged.connect(self.signals.window_update.emit)
-
-        memory_window_label = QLabel("Window: ")
+        memory_window_label = QLabel("Window")
         memory_window_label.setStyleSheet(LABEL_STYLES)
 
-        # ADD LABEL THEN WIDGET
-        self.memory_options_row.addWidget(memory_window_label)
-        self.memory_options_row.addWidget(self.memory_window_select)
+        self.memory_window_slider = ModelParamSlider(
+            min=0, max=100, default=12, width=260, height=40, 
+            name="WindowSize", title=memory_window_label, decimals=0, precision=1, 
+            orientation=Qt.Orientation.Horizontal
+        )
 
-        # Add Manual spacing
-        self.memory_options_row.addSpacing(7)
+        self.memory_window_slider.slider.sliderReleased.connect(
+            lambda: self.signals.window_update.emit(self.memory_window_slider.slider.value())
+        )
+
+        self.memory_options_row1.addWidget(self.memory_window_slider)
 
         #--------------------------------------------------  
         #------------ CLEAR ALL MEMORY WIDGET -------------
@@ -145,10 +157,10 @@ class SideBar(StyledWidget):
         
         self.clear_memory_btn = ClearHistoryButton()
 
-        self.memory_options_row.addWidget(self.clear_memory_btn)
+        self.memory_options_row2.addWidget(self.clear_memory_btn)
         
         # Add Manual spacing
-        self.memory_options_row.addSpacing(7)
+        self.memory_options_row2.addSpacing(7)
 
         self.clear_memory_btn.clicked.connect(self.signals.clear_chat.emit)
 
@@ -158,10 +170,24 @@ class SideBar(StyledWidget):
 
         self.memory_clear_last_chats_btn = ClearLastChatButton()
 
-        self.memory_options_row.addWidget(self.memory_clear_last_chats_btn)
+        self.memory_options_row2.addWidget(self.memory_clear_last_chats_btn)
+
+        # Add Manual spacing
+        self.memory_options_row2.addSpacing(7)
 
         self.memory_clear_last_chats_btn.clicked.connect(self.signals.clear_last_chats.emit)
+
+        #--------------------------------------------------  
+        #----------------- START A NEW CHAT ---------------
+        #--------------------------------------------------
+
+        self.memory_new_chat_btn = StartNewChatButton()
         
+        self.memory_options_row2.addWidget(self.memory_new_chat_btn)
+        
+        self.memory_new_chat_btn.clicked.connect(self.signals.start_new_chat.emit)
+
+
 #__________________________________________________________________________________________________________
         
         #--------------------------------------------------  
@@ -362,6 +388,38 @@ class SideBar(StyledWidget):
         self.plot = PlotWindow(272)
 
         self.plot_layout.addWidget(self.plot)
+
+#__________________________________________________________________________________________________________
+
+        #--------------------------------------------------  
+        #---------------- LOGS SELECTION ------------------
+        #--------------------------------------------------
+                
+        #--------------- CORE LAYOUT ----------------- 
+        #
+        #|--------------------------------|
+        #|                                |
+        #|   |--------|      |--------|   |
+        #|   |  xxx   |      |   yyy  |   |
+        #|   |--------|      |--------|   |
+        #|                                |
+        #|   |--------|      |--------|   |
+        #|   |   foo  |      |   log  |   |
+        #|   |--------|      |--------|   |
+        #|                                |
+        #|--------------------------------|
+
+        self.logs_main_layout = QHBoxLayout()
+
+        self.logs_left_column = QVBoxLayout()
+        self.logs_right_column = QVBoxLayout()
+
+        self.logs_main_layout.addLayout(self.logs_left_column)
+        self.logs_main_layout.addLayout(self.logs_right_column)
+
+        self.logs_collapsible = CollapsibleLayout("Logs", self.logs_main_layout)
+
+        self.sidebar_layout.addWidget(self.logs_collapsible)
 
 #__________________________________________________________________________________________________________
 

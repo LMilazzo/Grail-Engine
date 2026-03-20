@@ -2,11 +2,16 @@ from PyQt6.QtCore import QObject, pyqtSignal
 
 from collections import deque
 
+import random
+import json
+
 # >>> CONTROLLER SIGNALS >>>
 class ControllerSignals(QObject):
     # Signal
     pass
 # <<< CONTROLLER SIGNALS <<<
+
+LOG_BASE_PATH = "HISTORY/LOGS/"
 
 # >>> CONVERSATION MEMORY >>>
 class MemoryController():
@@ -34,6 +39,12 @@ class MemoryController():
         #--------------------------------------------------
         self.history_embedded = []
 
+        #--------------------------------------------------  
+        #-------------- CURRENT FILE NAME------------------
+        #--------------------------------------------------
+        self.seed_name = None
+        self.newLog_init_()
+
 #__________________________________________________________________________________________________________
     
     def addMessage(self, prompt: str, response: str):
@@ -43,6 +54,8 @@ class MemoryController():
 
         self.recent.append(item)
         self.history.append(item)
+        
+        self.writeToLog(item)
 
     # Returns a list of the x most recent messages
     def getRecent(self):
@@ -53,6 +66,25 @@ class MemoryController():
         item2 = items["response"]
         self.history_embedded.append(item1)
         self.history_embedded.append(item2)
+
+#__________________________________________________________________________________________________________
+
+    # Create a new log file
+    def newLog_init_(self):
+
+        self.seed_name = str(random.randint(0, 999999999))
+        
+        filename = self.seed_name
+        
+        open(LOG_BASE_PATH+filename+".jsonl", "w").close()
+
+    def writeToLog(self, item: dict):
+        
+        filename = self.seed_name
+
+        with open(LOG_BASE_PATH+filename+".jsonl", "a") as log:
+            log.write(json.dumps(item) + "\n")
+
 #__________________________________________________________________________________________________________
 
     # Rebulds the recent messages deque with a new window size from the full conversation history
@@ -87,6 +119,5 @@ class MemoryController():
 
         # REBUILD WITH THE CORRECT ITEMS
         self.rebuild_deque(self.window)
-
 
 # <<< CONVERSATION  HISTORY <<<

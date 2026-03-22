@@ -140,7 +140,11 @@ class ChatController():
     def _nextID(self):
         self._NEXT_ID += 1
 
+#__________________________________________________________________________________________________________
 
+    def loadChatFromLog(self, history: list):
+        print("Loading Chat")
+        pass
 
 
 # <<< CHAT CONTROLLER <<<

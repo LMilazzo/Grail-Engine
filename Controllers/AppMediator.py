@@ -40,10 +40,13 @@ class AppMediator():
         #-------------- LOGIC CONTROLLERS -----------------
         #--------------------------------------------------
 
-        self.MemoryController = MemoryController(window=12)
-
         self.DataLoader = DataLoader
-        self.DataLoader.pullLogs()
+
+        self.MemoryController = MemoryController(window=12)
+        # EARLY CONNECT SIGNALS
+        self.connectLoggingSignals()
+        # INITIALIZE LOG
+        self.MemoryController.newLog_init_()
 
         self.ToolController = ToolController(self.DataLoader.getOllamaTools(), self.DataLoader.getToolKeys())
 
@@ -64,14 +67,11 @@ class AppMediator():
         # PARAMETER PRESETS
         self.SideBarController.addPresets(self.DataLoader.getPresets())
 
-        # SET LOGS
-        self.SideBarController.setLogs(self.DataLoader.getLogs())
-
         # TOOL TOGGLES
         self.SideBarController.addTools(self.DataLoader.getToolKeys())
 
         #--------------------------------------------------  
-        #--------------- CONNECT SIGNALS-------------------
+        #--------------- CONNECT SIGNALS ------------------
         #--------------------------------------------------
         
         # UI
@@ -81,7 +81,6 @@ class AppMediator():
         # CONTROLLER
         self.connectOllamaControllerSignals()
         self._init_ModelRunner()
-
 
 #__________________________________________________________________________________________________________
     
@@ -128,11 +127,27 @@ class AppMediator():
         self.SideBar.signals.clear_last_chats.connect(lambda: self.SideBarController.setPlot(self.PlotController.clearLast()))
 
         # START NEW CHAT
-        self.SideBar.signals.start_new_chat.connect(self.MemoryController.clear)
-        self.SideBar.signals.start_new_chat.connect(self.ChatController.clear)
         self.SideBar.signals.start_new_chat.connect(self.MemoryController.newLog_init_)
-        self.SideBar.signals.start_new_chat.connect(lambda: self.SideBarController.setPlot(self.PlotController.clear()))
-        self.SideBar.signals.start_new_chat.connect(lambda: self.SideBarController.setLogs(self.DataLoader.pullLogs()))
+
+    def connectLoggingSignals(self):
+
+        # NO LOGS NEED TO START A NEW ONE AND SET IT
+        self.SideBarController.signals.no_logs.connect(self.MemoryController.newLog_init_)
+
+        # HANDLE WHEN A NEW LOG IS SELECTED
+        self.SideBarController.signals.new_log_selected.connect(lambda new_active_name: self.MemoryController.changeActiveLog(new_active_name))
+        # CLEAR LINGERING DATA
+        self.SideBarController.signals.new_log_selected.connect(self.MemoryController.clear)
+        self.SideBarController.signals.new_log_selected.connect(self.ChatController.clear)
+        self.SideBarController.signals.new_log_selected.connect(lambda: self.SideBarController.setPlot(self.PlotController.clear()))
+        # LOAD LOG DATA
+        self.SideBarController.signals.new_log_selected.connect(self.MemoryController.loadMemoryFromLog)
+        self.MemoryController.signals.log_memory_loaded.connect(self.ChatController.loadChatFromLog)
+
+
+
+        self.MemoryController.signals.new_log_created.connect(self.SideBarController.autoSelectLog)
+        self.MemoryController.signals.new_log_created.connect(lambda: self.SideBarController.setLogs(self.DataLoader.pullLogs()))
 
     def _init_ModelRunner(self):
 
@@ -169,7 +184,7 @@ class AppMediator():
 
     def handlePrompt(self, model: str, prompt: str):
         
-        params = self.SideBarController.getPromptRelavantData()
+        params = self.SideBarController.getPromptRelevantData()
         
         params["model"] = model
         params["prompt"] = prompt

@@ -11,10 +11,12 @@ from Widgets.StyledWidget import StyledWidget
 from Utils.PyQt_Utils import remove_widget_from_layout_rec, clear_layout
 
 import re
+import os
 
 #**************  SIGNALS *****************
 class ControllerSignals(QObject):
-    pass
+    no_logs = pyqtSignal()
+    new_log_selected = pyqtSignal(str)
 
 #**************  SIGNALS *****************
 
@@ -35,6 +37,13 @@ class SideBarController():
         #--------------------------------------------------
         # A LIST OF TOOL TOGGLE OBJECT TO REFRENCE TO FIND THE ACTIVATED ONES
         self.TOOL_REFERENCE_DICT = {}
+
+        #--------------------------------------------------  
+        #----------- REFERENCE LIST FOR LOGS  -------------
+        #--------------------------------------------------
+        self.LOG_REFERENCES = []
+        self.last_auto_log = None
+        self.ACTIVE_LOG = None
 
 #__________________________________________________________________________________________________________
 
@@ -67,11 +76,17 @@ class SideBarController():
     def setPlot(self, html):
         self.SideBar.plot.setHtml(html)
 
+#__________________________________________________________________________________________________________
+
+    #--------------------------------------------------  
+    #------------------- LOG HANDLING -----------------
+    #--------------------------------------------------
     def setLogs(self, logs: list):
-        
+
         #EMPTY INCASE RESET
         clear_layout(self, self.SideBar.logs_left_column)
         clear_layout(self, self.SideBar.logs_right_column)
+        self.LOG_REFERENCES.clear()
 
         left = True
 
@@ -80,6 +95,11 @@ class SideBarController():
             btn_name = l.replace(".jsonl", "")
             button = LogButton(btn_name, btn_name)
             button.signals.delete_log.connect(self.deleteLog)
+
+            button.signals.selected.connect(self.selectLog)
+            button.signals.selected_name_changed.connect(self.selectLog)
+
+            self.LOG_REFERENCES.append(button)
 
             if left:
                 self.SideBar.logs_left_column.addWidget(button, alignment=Qt.AlignmentFlag.AlignTop)
@@ -91,14 +111,46 @@ class SideBarController():
         self.SideBar.logs_left_column.addStretch()
         self.SideBar.logs_right_column.addStretch()
 
-    def deleteLog(self, object_name: str):
+        self.selectLog(self.last_auto_log)
+
+    def deleteLog(self, button: StyledWidget, path: str, object_name: str):
+
+        # DELETE FILE
+        os.remove(path)
 
         # RECURSIVLY REMOVE FROM THE LAYOUT UI
         remove_widget_from_layout_rec(self.SideBar.logs_main_layout, object_name)
 
+        #REMOVE FROM REFERENCE LIST
+        self.LOG_REFERENCES.remove(button)
+
+        # COUNT CURRENT LOGS AND EMIT SIGNAL IF A NEW ONE IS NEEDED
+        if (self.SideBar.logs_right_column.count() + self.SideBar.logs_left_column.count()) < 3:
+            self.signals.no_logs.emit()
+
+        # IF THE CURRENT CHAT LOG IS DELETED SELECT ANOTHER
+        elif button.selected:
+            self.selectLog(self.LOG_REFERENCES[0].name)
+
+    def selectLog(self, name: str):
+        for item in self.LOG_REFERENCES:
+
+            # IF IT IS THE DESIRED ITEM SET IT ACTIVE AND EMIT SIGNALS
+            if name == item.name:
+                item.changeStatus(override=True, status=True)
+                self.ACTIVE_LOG = item.converted_name
+                self.signals.new_log_selected.emit(self.ACTIVE_LOG)
+
+            # OTHERWISE DEACTIVE
+            else:
+                item.changeStatus(override=True, status=False)
+
+    def autoSelectLog(self, name: str):
+        print("Auto selecting ", name)
+        self.last_auto_log = name
 #__________________________________________________________________________________________________________
 
-    def getPromptRelavantData(self):
+    def getPromptRelevantData(self):
 
         return {
             "system" : self.SideBar.system_prompt_input.getText(),

@@ -8,7 +8,8 @@ import json
 # >>> CONTROLLER SIGNALS >>>
 class ControllerSignals(QObject):
     # Signal
-    pass
+    new_log_created = pyqtSignal(str)
+    log_memory_loaded = pyqtSignal(list)
 # <<< CONTROLLER SIGNALS <<<
 
 LOG_BASE_PATH = "HISTORY/LOGS/"
@@ -42,8 +43,7 @@ class MemoryController():
         #--------------------------------------------------  
         #-------------- CURRENT FILE NAME------------------
         #--------------------------------------------------
-        self.seed_name = None
-        self.newLog_init_()
+        self.ACTIVE_LOG = None
 
 #__________________________________________________________________________________________________________
     
@@ -72,19 +72,25 @@ class MemoryController():
     # Create a new log file
     def newLog_init_(self):
 
-        self.seed_name = str(random.randint(0, 999999999))
-        
-        filename = self.seed_name
-        
-        open(LOG_BASE_PATH+filename+".jsonl", "w").close()
+        random_seed = str(random.randint(0, 999999999))
+                
+        open(LOG_BASE_PATH+random_seed+".jsonl", "w").close()
+
+        self.signals.new_log_created.emit(random_seed)
+
+        self.ACTIVE_LOG = random_seed
 
     def writeToLog(self, item: dict):
-        
-        filename = self.seed_name
 
-        with open(LOG_BASE_PATH+filename+".jsonl", "a") as log:
+        with open(LOG_BASE_PATH+self.ACTIVE_LOG+".jsonl", "a") as log:
             log.write(json.dumps(item) + "\n")
+    
+    def changeActiveLog(self, new_active: str):
+        print("Changing log to [", new_active, "]")
+        self.ACTIVE_LOG = new_active
 
+    def loadMemoryFromLog(self):
+        self.signals.log_memory_loaded.emit([])
 #__________________________________________________________________________________________________________
 
     # Rebulds the recent messages deque with a new window size from the full conversation history

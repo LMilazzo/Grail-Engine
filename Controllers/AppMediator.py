@@ -118,6 +118,7 @@ class AppMediator():
 
         # CLEAR MESSAGES AND HISTORY
         self.SideBar.signals.clear_chat.connect(self.MemoryController.clear)
+        self.SideBar.signals.clear_chat.connect(self.MemoryController.clearLog)
         self.SideBar.signals.clear_chat.connect(self.ChatController.clear)
         self.SideBar.signals.clear_chat.connect(lambda: self.SideBarController.setPlot(self.PlotController.clear()))
 

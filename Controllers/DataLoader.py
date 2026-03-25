@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import os
+from pathlib import Path
 
 from Utils.OllamaUtils import listModels
 from Model_Presets.Param_Presets import PARAM_PRESETS
@@ -49,8 +50,8 @@ class DataLoader():
         return self.logs
 
     def pullLogs(self):
-        l = os.listdir("HISTORY/LOGS")
-        self.logs = l
-        return l
+
+        self.logs = [f.name for f in Path("HISTORY/LOGS").glob("*.jsonl")]
+        return self.logs
     
 # <<< DATA LOADER <<<

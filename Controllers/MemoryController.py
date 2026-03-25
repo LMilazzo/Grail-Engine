@@ -173,9 +173,6 @@ class MemoryController():
 
         self.history_embedded = []
 
-        # CLEAR LOG FILE
-        self.clearLog()
-
     #Deletes the last messege prompt pair
     def undo(self):
 

@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal, QTimer
 from PyQt6.QtWidgets import QHBoxLayout
 
 from GUI.ChatArea import ChatArea
@@ -49,7 +49,7 @@ class ChatController():
         #    "tokens": 512,
         #    "tools": [],
         #    "model": "KURISU-1.5:latest",
-        #   "prompt": "erfnjdfnkj",
+        #    "prompt": "erfnjdfnkj",
         #    "id": 0,
         #    "token_estimate": 2
         #}
@@ -70,7 +70,7 @@ class ChatController():
 
         #Scroll to bottom
         bar = self.ChatArea.conversation.scroll_area.verticalScrollBar()
-        bar.setValue(bar.maximum())
+        QTimer.singleShot(10, lambda: bar.setValue(bar.maximum()))    
 
     def _init_Response(self, params):
 
@@ -143,8 +143,52 @@ class ChatController():
 #__________________________________________________________________________________________________________
 
     def loadChatFromLog(self, history: list):
-        print("Loading Chat")
-        pass
+        print(f"\033[32m _____________________________________________________ \033[0m")
+
+        print(f"\033[32m Loading {len(history)} Items \033[32m")
+
+        for item in history:
+
+            self._quick_add(item["prompt"], 0)
+            self._quick_add(item["response"], 1)
+
+        #Scroll to bottom
+        bar = self.ChatArea.conversation.scroll_area.verticalScrollBar()
+        QTimer.singleShot(10, lambda: bar.setValue(bar.maximum()))       
+
+        print(f"\033[32m _____________________________________________________ \033[0m")
+
+    def _quick_add(self, message: str, type: int):
+        
+        # ADD PROMPT
+        if type == 0:
+            # +++++ CREATE MESSAGE BUBBLE +++++
+            user_message = UserContainer(info=None, message_id=self._NEXT_ID, override_info=True)
+            user_message.setText(message)
+
+            self.last_prompt = user_message
+
+            # Add Message to the ChatArea Widget UI
+            self.ChatArea.addUserMessage(user_message)
+        
+        # ADD RESPONSE
+        elif type == 1:
+
+            # +++++ CREATE MESSAGE BUBBLE +++++
+            assistant_message = BotContainer(info=None, message_id=self._NEXT_ID, override_info=True)
+            assistant_message.setText(message, streamed=False)
+
+            self._nextID()
+
+            self.last_response = assistant_message
+
+            self.ChatArea.addAssistantMessage(assistant_message)
+
+        else:
+            return
+
+        # PROCESS NEXT ID
+        self._nextID()
 
 
 # <<< CHAT CONTROLLER <<<

@@ -17,6 +17,7 @@ import os
 class ControllerSignals(QObject):
     no_logs = pyqtSignal()
     new_log_selected = pyqtSignal(str)
+    reselect_from_rename = pyqtSignal(str)
 
 #**************  SIGNALS *****************
 
@@ -94,13 +95,17 @@ class SideBarController():
 
             btn_name = l.replace(".jsonl", "")
             button = LogButton(btn_name, btn_name)
+
+            # DELETE SIGNAL
             button.signals.delete_log.connect(self.deleteLog)
 
+            # SELECTION SIGNALS
             button.signals.selected.connect(self.selectLog)
-            button.signals.selected_name_changed.connect(self.selectLog)
 
+            # ADD TO REFERENCE LIST
             self.LOG_REFERENCES.append(button)
 
+            # PICK COLUMN TO RENDER TO
             if left:
                 self.SideBar.logs_left_column.addWidget(button, alignment=Qt.AlignmentFlag.AlignTop)
                 left = not left
@@ -108,9 +113,11 @@ class SideBarController():
                 self.SideBar.logs_right_column.addWidget(button, alignment=Qt.AlignmentFlag.AlignTop)
                 left = not left
         
+        # ADJUST COLUMNS
         self.SideBar.logs_left_column.addStretch()
         self.SideBar.logs_right_column.addStretch()
 
+        # SELECT THE LAST AUTO LOG
         self.selectLog(self.last_auto_log)
 
     def deleteLog(self, button: StyledWidget, path: str, object_name: str):
@@ -132,14 +139,19 @@ class SideBarController():
         elif button.selected:
             self.selectLog(self.LOG_REFERENCES[0].name)
 
-    def selectLog(self, name: str):
+    def selectLog(self, name: str, from_rename=False):
         for item in self.LOG_REFERENCES:
 
             # IF IT IS THE DESIRED ITEM SET IT ACTIVE AND EMIT SIGNALS
-            if name == item.name:
+            if name == item.name or name == item.converted_name:
                 item.changeStatus(override=True, status=True)
                 self.ACTIVE_LOG = item.converted_name
-                self.signals.new_log_selected.emit(self.ACTIVE_LOG)
+                
+                if not from_rename:
+                    #Full signal
+                    self.signals.new_log_selected.emit(self.ACTIVE_LOG)
+                else:
+                    self.signals.reselect_from_rename.emit(self.ACTIVE_LOG)
 
             # OTHERWISE DEACTIVE
             else:

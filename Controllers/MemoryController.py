@@ -4,6 +4,7 @@ from collections import deque
 
 import random
 import json
+import os
 
 # >>> CONTROLLER SIGNALS >>>
 class ControllerSignals(QObject):
@@ -68,6 +69,7 @@ class MemoryController():
         self.history_embedded.append(item2)
 
 #__________________________________________________________________________________________________________
+# LOGGING
 
     # Create a new log file
     def newLog_init_(self):
@@ -82,7 +84,7 @@ class MemoryController():
 
     def writeToLog(self, item: dict):
 
-        with open(LOG_BASE_PATH+self.ACTIVE_LOG+".jsonl", "a") as log:
+        with open(f"{LOG_BASE_PATH}{self.ACTIVE_LOG}.jsonl", "a") as log:
             log.write(json.dumps(item) + "\n")
     
     def changeActiveLog(self, new_active: str):
@@ -90,7 +92,63 @@ class MemoryController():
         self.ACTIVE_LOG = new_active
 
     def loadMemoryFromLog(self):
-        self.signals.log_memory_loaded.emit([])
+        print(f"\033[31m _____________________________________________________ \033[0m")
+        print(f"\033[31m Loading Memory \033[0m")
+
+        msgs = []
+
+        with open(f"{LOG_BASE_PATH}{self.ACTIVE_LOG}.jsonl") as f:
+            for line in f:
+                item = json.loads(line)
+                self.history.append(item)
+                self.recent.append(item)
+        
+        print(f"\033[31m Loaded: {len(self.history)} Total Messages - {len(self.recent)} In Window \033[0m")
+
+
+        print(f"\033[31m _____________________________________________________ \033[0m")
+
+        self.signals.log_memory_loaded.emit(self.history)
+
+    def undoLog(self):
+        with open(f"{LOG_BASE_PATH}{self.ACTIVE_LOG}.jsonl", "rb+") as f:
+
+            # DELETE LAST LOG ENTRY
+            f.seek(0, os.SEEK_END)
+            end = f.tell()
+
+            if end == 0:
+                # empty file
+                pass
+            else:
+                pos = end - 1
+
+                # Skip trailing newline(s)
+                while pos >= 0:
+                    f.seek(pos)
+                    if f.read(1) != b"\n":
+                        break
+                    pos -= 1
+
+                # Find the previous newline
+                while pos >= 0:
+                    f.seek(pos)
+                    if f.read(1) == b"\n":
+                        break
+                    pos -= 1
+
+                # Truncate
+                if pos >= 0:
+                    f.truncate(pos + 1)
+                else:
+                    # Only one line in file
+                    f.truncate(0)
+
+    def clearLog(self):
+
+        #ERASE ALL DATA
+        with open(f"{LOG_BASE_PATH}{self.ACTIVE_LOG}.jsonl", "r+") as f:
+            f.truncate(0)
 #__________________________________________________________________________________________________________
 
     # Rebulds the recent messages deque with a new window size from the full conversation history
@@ -115,6 +173,9 @@ class MemoryController():
 
         self.history_embedded = []
 
+        # CLEAR LOG FILE
+        self.clearLog()
+
     #Deletes the last messege prompt pair
     def undo(self):
 
@@ -125,5 +186,8 @@ class MemoryController():
 
         # REBUILD WITH THE CORRECT ITEMS
         self.rebuild_deque(self.window)
+
+        # UNDO LOG LAST LINE
+        self.undoLog()
 
 # <<< CONVERSATION  HISTORY <<<

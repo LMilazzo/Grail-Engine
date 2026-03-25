@@ -9,8 +9,7 @@ from Widgets.StyledWidget import StyledWidget
 #**************  SIGNALS *****************
 class WidgetSignals(QObject):
     delete_log = pyqtSignal(StyledWidget, str, str)
-    selected = pyqtSignal(str)
-    selected_name_changed = pyqtSignal(str)
+    selected = pyqtSignal(str, bool) # Name and wether the selection came from name change
 
 #**************  SIGNALS *****************
 
@@ -110,7 +109,7 @@ class LogButton(StyledWidget):
     def _onclick(self):
         print("Set conversation to ", self.name)
 
-        self.signals.selected.emit(self.name)
+        self.signals.selected.emit(self.name, False)
 #__________________________________________________________________________________________________________
 
     def _rename(self):
@@ -166,7 +165,7 @@ class LogButton(StyledWidget):
             self._setStyle(self.converted_name)
 
             if self.selected:
-                self.signals.selected_name_changed.emit(self.converted_name)
+                self.signals.selected.emit(self.converted_name, True)
 
 #__________________________________________________________________________________________________________
 

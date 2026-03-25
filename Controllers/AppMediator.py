@@ -134,7 +134,7 @@ class AppMediator():
         # NO LOGS NEED TO START A NEW ONE AND SET IT
         self.SideBarController.signals.no_logs.connect(self.MemoryController.newLog_init_)
 
-        # HANDLE WHEN A NEW LOG IS SELECTED
+        # -- HANDLE WHEN A NEW LOG IS SELECTED --
         self.SideBarController.signals.new_log_selected.connect(lambda new_active_name: self.MemoryController.changeActiveLog(new_active_name))
         # CLEAR LINGERING DATA
         self.SideBarController.signals.new_log_selected.connect(self.MemoryController.clear)
@@ -144,8 +144,10 @@ class AppMediator():
         self.SideBarController.signals.new_log_selected.connect(self.MemoryController.loadMemoryFromLog)
         self.MemoryController.signals.log_memory_loaded.connect(self.ChatController.loadChatFromLog)
 
+        # -- HANDLE RESELECTION WHEN NAME IS CHANGED --
+        self.SideBarController.signals.reselect_from_rename.connect(lambda new_active_name: self.MemoryController.changeActiveLog(new_active_name))
 
-
+        # -- WHEN A NEW LOG IS CREATED SET AS AUTO SELECT AND REGENERATE THE LIST --
         self.MemoryController.signals.new_log_created.connect(self.SideBarController.autoSelectLog)
         self.MemoryController.signals.new_log_created.connect(lambda: self.SideBarController.setLogs(self.DataLoader.pullLogs()))
 

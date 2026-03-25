@@ -9,7 +9,7 @@ from Utils.OllamaUtils import TokenCountEstimate_Prompt, TokenCountEstimate_Stri
 
 # >>> PROMPT CONTAINER >>>
 class UserContainer(StyledWidget):
-    def __init__(self, info: dict, message_id: int):
+    def __init__(self, info: dict, message_id: int, override_info=False):
         super().__init__("bubble"+str(message_id))
 
         # INFO
@@ -61,9 +61,13 @@ class UserContainer(StyledWidget):
         #    "id": 0,
         #    "token_estimate": 2
         #}
-        self.info_lab = QLabel(self.header_format.format(
-            self.info["token_estimate"], self.info["temp"], self.info["topP"], self.info["tokens"])
-        )
+        if self.info:
+            self.info_lab = QLabel(self.header_format.format(
+                self.info["token_estimate"], self.info["temp"], self.info["topP"], self.info["tokens"])
+            )
+        if override_info:
+            self.info_lab = QLabel("| Loaded Memory | No Data |")
+
 
         self.info_lab.setObjectName("info")
         
@@ -99,7 +103,7 @@ class UserContainer(StyledWidget):
 #__________________________________________________________________________________________________________
 
     # Resets the text in the bubble
-    def setText(self, text):
+    def setText(self, text: str):
         self.bubble.set_text(text)
 
     # Returns the bubble plain text
@@ -117,7 +121,7 @@ class UserContainer(StyledWidget):
 
 # >>> PROMPT CONTAINER >>>
 class BotContainer(StyledWidget):
-    def __init__(self, info: dict, message_id: int):
+    def __init__(self, info: dict, message_id: int, override_info=False):
         super().__init__("bubble"+str(message_id))
 
         # INFO
@@ -168,7 +172,11 @@ class BotContainer(StyledWidget):
         #    "id": 0,
         #    "token_estimate": 2
         #}
-        self.info_lab = QLabel(self.header_format.format("To Do", self.info["model"]))
+        if self.info:
+            self.info_lab = QLabel(self.header_format.format("~PLACEHOLDERTEXT~", self.info["model"]))
+        if override_info:
+            self.info_lab = QLabel("| Loaded Memory |  No Data |")
+
 
         self.info_lab.setObjectName("info")
 
@@ -197,9 +205,11 @@ class BotContainer(StyledWidget):
         layout.addStretch()
     
     # Resets the text in the bubble
-    def setText(self, text):
+    def setText(self, text: str, streamed=True):
         self.bubble.set_text(text)
-        self.update_tokens()
+
+        if streamed:
+            self.update_tokens()
 
     # Returns the bubble plain text
     def toPlainText(self):
